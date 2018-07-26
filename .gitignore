@@ -1,2 +1,5 @@
-/target/*
-.Ds_Store
+/target/
+.DS_Store
+.settings
+.classpath
+.project
