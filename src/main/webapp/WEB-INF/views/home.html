@@ -72,7 +72,7 @@
 				</tr>
 			</thead>
 			<tbody>
-				<tr th:each="feriado : ${feriados}">
+				<tr th:each="feriado : ${feriados}" th:switch="${feriado.situacao.equals('Ativo(a)')}">
 					<td scope="row" th:text="${feriado.descricao}"></td>
 					<td scope="row" th:text="${feriado.data}"></td>
 					<td scope="row" th:text="${feriado.tipoFeriado}"></td>
@@ -81,9 +81,12 @@
 					<td scope="row"><a
 						th:href="@{/feriado/alterar/{feriadoId}(feriadoId=${feriado.id})}"
 						class="btn btn-sm btn-primary">Atualizar</a></td>
-					<td scope="row"><a
+					<td scope="row" th:case="true"><a
 						th:href="@{/feriado/inativar/{feriadoId}(feriadoId=${feriado.id})}"
 						class="btn btn-sm btn-primary">Inativar</a></td>
+					<td scope="row" th:case="false"><a
+						th:href="@{/feriado/inativar/{feriadoId}(feriadoId=${feriado.id})}"
+						class="btn btn-sm btn-primary">Ativar</a></td>
 				</tr>
 			</tbody>
 

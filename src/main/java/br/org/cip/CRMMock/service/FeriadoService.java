@@ -12,16 +12,24 @@ public class FeriadoService {
 	@Autowired
 	private FeriadoDao feriadoDao;
 
-	public long save(String tipoRequisicao, String data, String situacao, String tipoFeriado, String descricao) {
+	public long incluir(String tipoRequisicao, String data, String situacao, String tipoFeriado, String descricao) {
 		return feriadoDao.incluir(tipoRequisicao, data, situacao, tipoFeriado, descricao);
 	}
 
-	public long save(Long id, String tipoRequisicao, String data, String situacao, String tipoFeriado, String descricao) {
+	public long alterar(Long id, String tipoRequisicao, String data, String situacao, String tipoFeriado, String descricao) {
 		return feriadoDao.alterar(id, tipoRequisicao, data, situacao, tipoFeriado, descricao);
 	}
 	
 	public Feriado getFeriado(long id) {
 		return feriadoDao.consultar(id);
+	}
+	
+	public long ativar(Long id, String tipoRequisicao) {
+		return feriadoDao.ativar(id, tipoRequisicao);
+	}
+	
+	public long inativar(Long id, String tipoRequisicao) {
+		return feriadoDao.inativar(id, tipoRequisicao);
 	}
 
 	/*public long delete(long feriadoId) {

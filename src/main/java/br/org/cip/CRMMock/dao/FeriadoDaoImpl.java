@@ -49,8 +49,8 @@ public class FeriadoDaoImpl implements FeriadoDao {
 	public long inativar(long id, String tipoRequisicao) {
 		EntityManagerFactory factory = Persistence.createEntityManagerFactory("webappdb");
 		EntityManager manager = factory.createEntityManager();
-		manager.createQuery("UPDATE Feriado f SET f.tiporequisicao = :tiporesquisicao WHERE f.id = :id")
-				.setParameter("id", id).setParameter("tiporequisicao", tipoRequisicao).executeUpdate();
+		manager.createQuery("UPDATE Feriado f SET f.tiporequisicao = :tiporesquisicao, f.situacao = :situacao  WHERE f.id = :id")
+				.setParameter("id", id).setParameter("tiporequisicao", tipoRequisicao).setParameter("situacao", "Inativo(a)").executeUpdate();
 		manager.close();
 		factory.close();
 		return id;
@@ -60,8 +60,8 @@ public class FeriadoDaoImpl implements FeriadoDao {
 	public long ativar(long id, String tipoRequisicao) {
 		EntityManagerFactory factory = Persistence.createEntityManagerFactory("webappdb");
 		EntityManager manager = factory.createEntityManager();
-		manager.createQuery("UPDATE Feriado f SET f.tiporequisicao = :tiporesquisicao WHERE f.id = :id")
-				.setParameter("id", id).setParameter("tiporequisicao", tipoRequisicao).executeUpdate();
+		manager.createQuery("UPDATE Feriado f SET f.tiporequisicao = :tiporesquisicao, f.situacao = :situacao WHERE f.id = :id")
+				.setParameter("id", id).setParameter("tiporequisicao", tipoRequisicao).setParameter("situacao", "Ativo(a)").executeUpdate();
 		manager.close();
 		factory.close();
 		return id;

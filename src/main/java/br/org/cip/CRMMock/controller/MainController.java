@@ -28,17 +28,18 @@ public class MainController {
 		
 		model.addAttribute("theme", Config.getInstance().getThemeType().getLabel());
 		
+		User user = (User) session.getAttribute("usuarioLogado");
+		if(user==null) {
+			user = new User();
+		}
+		model.addAttribute("user", user);
+		
 		System.out.println(Config.getInstance().getThemeType().getLabel());
 		
 		FeriadoDao feriadosDao = new FeriadoDaoImpl();
 		List<Feriado> feriados = feriadosDao.getAllFeriados();
 		model.addAttribute("feriados", feriados);
 		
-		User user = (User) session.getAttribute("usuarioLogado");
-		if(user==null) {
-			user = new User();
-		}
-		model.addAttribute("user", user);
 		
 		FeriadoForm feriadoForm = new FeriadoForm();
 		model.addAttribute("feriadoform", feriadoForm );

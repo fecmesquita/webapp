@@ -94,7 +94,7 @@ public class FeriadoController {
 		model.addAttribute("user", user);
 		
 		
-		feriadoService.save("Efetivar", feriadoForm.getData(), feriadoForm.getSituacao(), feriadoForm.getTipoferiado(), feriadoForm.getDescricao());
+		feriadoService.incluir("Efetivar", feriadoForm.getData(), feriadoForm.getSituacao(), feriadoForm.getTipoferiado(), feriadoForm.getDescricao());
 	
 		model.addAttribute("message", "Feriado criado!");
 		attributes.addFlashAttribute("message", "Feriado criado!");
@@ -115,7 +115,7 @@ public class FeriadoController {
 		System.out.println("FeriadoFormId: " + feriadoForm.getId());
 //		System.out.println("FeriadoId" + feriadoId);
 		
-		long id = feriadoService.save(feriadoForm.getId(), "Efetivar", feriadoForm.getData(), feriadoForm.getSituacao(), feriadoForm.getTipoferiado(), feriadoForm.getDescricao());
+		long id = feriadoService.alterar(feriadoForm.getId(), "Efetivar", feriadoForm.getData(), feriadoForm.getSituacao(), feriadoForm.getTipoferiado(), feriadoForm.getDescricao());
 
 //		model.addAttribute("message", "Feriado alterado com sucesso!");
 		attributes.addFlashAttribute("message", "Feriado alterado com sucesso!");
@@ -141,8 +141,8 @@ public class FeriadoController {
 		return "feriadoDetails";
 	}
 	
-	@RequestMapping(value = "/feriado/inativar/{feriadoId}", method=RequestMethod.GET)
-	public String InativarFeriado(@PathVariable String feriadoId, HttpSession session, Model model, RedirectAttributes attributes) {
+	@RequestMapping(value = "/feriado/ativar/{feriadoId}", method=RequestMethod.GET)
+	public String ativarFeriado(@PathVariable String feriadoId, HttpSession session, Model model, RedirectAttributes attributes) {
 		model.addAttribute("theme", Config.getInstance().getThemeType().getLabel());
 		User user = (User) session.getAttribute("usuarioLogado");
 		if (user == null) {
@@ -150,7 +150,24 @@ public class FeriadoController {
 		}
 		model.addAttribute("user", user);
 		
-//		feriadoService.
+		feriadoService.ativar(Long.parseLong(feriadoId), "Efetivar");//TODO
+		
+		
+		attributes.addFlashAttribute("message", "Feriado excluido com sucesso.");
+
+		return "redirect:/";
+	}
+	
+	@RequestMapping(value = "/feriado/inativar/{feriadoId}", method=RequestMethod.GET)
+	public String inativarFeriado(@PathVariable String feriadoId, HttpSession session, Model model, RedirectAttributes attributes) {
+		model.addAttribute("theme", Config.getInstance().getThemeType().getLabel());
+		User user = (User) session.getAttribute("usuarioLogado");
+		if (user == null) {
+			user = new User();
+		}
+		model.addAttribute("user", user);
+		
+		feriadoService.inativar(Long.parseLong(feriadoId), "Efetivar");//TODO
 		
 		
 		attributes.addFlashAttribute("message", "Feriado excluido com sucesso.");
