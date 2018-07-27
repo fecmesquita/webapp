@@ -7,6 +7,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.DynamicUpdate;
+
 @Entity
 @Table(name = "feriado")
 public class Feriado {
@@ -19,7 +21,7 @@ public class Feriado {
 	@Column(name = "data")
 	private String data;
 	@Column(name = "situacao")
-	private String ativo;
+	private String situacao;
 	@Column(name = "tipoferiado")
 	private String tipoFeriado;
 	@Column(name = "descricao")
@@ -41,13 +43,6 @@ public class Feriado {
 		this.tipoRequisicao = tipoRequisicao;
 	}
 
-	public String getAtivo() {
-		return ativo;
-	}
-
-	public void setAtivo(String ativo) {
-		this.ativo = ativo;
-	}
 
 	public String getData() {
 		return data;
@@ -58,11 +53,11 @@ public class Feriado {
 	}
 
 	public String getSituacao() {
-		return ativo;
+		return situacao;
 	}
 
-	public void setSituacao(String ativo) {
-		this.ativo = ativo;
+	public void setSituacao(String situacao) {
+		this.situacao = situacao;
 	}
 
 	public String getTipoFeriado() {
@@ -83,7 +78,7 @@ public class Feriado {
 
 	@Override
 	public String toString() {
-		return "Feriado [id=" + id + ", data=" + data + ", situacao=" + ativo + ", tipoFeriado=" + tipoFeriado
+		return "Feriado [id=" + id + ", data=" + data + ", situacao=" + situacao + ", tipoFeriado=" + tipoFeriado
 				+ ", descricao=" + descricao + "]";
 	}
 

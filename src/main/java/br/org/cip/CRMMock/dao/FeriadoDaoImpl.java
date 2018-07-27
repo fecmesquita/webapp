@@ -5,6 +5,7 @@ import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
+import javax.transaction.Transactional;
 
 import org.springframework.stereotype.Repository;
 
@@ -47,24 +48,35 @@ public class FeriadoDaoImpl implements FeriadoDao {
 
 	@Override
 	public long inativar(long id, String tipoRequisicao) {
+		Feriado feriado = consultar(id);
+		feriado.setTipoRequisicao(tipoRequisicao);
+		feriado.setSituacao("Inativo(a)");
+		alterar(feriado);
+		return feriado.getId();
+	}
+
+	private void alterar(Feriado feriado) {
 		EntityManagerFactory factory = Persistence.createEntityManagerFactory("webappdb");
 		EntityManager manager = factory.createEntityManager();
-		manager.createQuery("UPDATE Feriado f SET f.tiporequisicao = :tiporesquisicao, f.situacao = :situacao  WHERE f.id = :id")
-				.setParameter("id", id).setParameter("tiporequisicao", tipoRequisicao).setParameter("situacao", "Inativo(a)").executeUpdate();
+		try {
+			manager.getTransaction().begin();
+			feriado = manager.merge(feriado);
+			manager.getTransaction().commit();
+		} finally {
+			if (manager.getTransaction().isActive())
+				manager.getTransaction().rollback();
+		}
 		manager.close();
-		factory.close();
-		return id;
+		factory.close();		
 	}
 
 	@Override
 	public long ativar(long id, String tipoRequisicao) {
-		EntityManagerFactory factory = Persistence.createEntityManagerFactory("webappdb");
-		EntityManager manager = factory.createEntityManager();
-		manager.createQuery("UPDATE Feriado f SET f.tiporequisicao = :tiporesquisicao, f.situacao = :situacao WHERE f.id = :id")
-				.setParameter("id", id).setParameter("tiporequisicao", tipoRequisicao).setParameter("situacao", "Ativo(a)").executeUpdate();
-		manager.close();
-		factory.close();
-		return id;
+		Feriado feriado = consultar(id);
+		feriado.setTipoRequisicao(tipoRequisicao);
+		feriado.setSituacao("Ativo(a)");
+		alterar(feriado);
+		return feriado.getId();
 	}
 
 	@Override
