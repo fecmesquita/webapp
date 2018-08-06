@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import br.org.cip.CRMMock.dao.ThemeDao;
 import br.org.cip.CRMMock.dao.UserDao;
 import br.org.cip.CRMMock.dao.UserDaoImpl;
-import br.org.cip.CRMMock.model.User;
+import br.org.cip.CRMMock.model.UserVO;
 import br.org.cip.CRMMock.model.form.LoginForm;
 import br.org.cip.CRMMock.model.theme.Config;
 import br.org.cip.CRMMock.model.theme.ThemeType;
@@ -69,7 +69,7 @@ public class LoginController {
 		LoginForm loginModel = new LoginForm();
 		model.addAttribute("loginform", loginModel);
 
-		User user = null;
+		UserVO user = null;
 		user = userDao.findByNamePassword(loginForm.getUsername(), loginForm.getPassword());
 		if (user != null) {
 			// usuario existe, guardaremos ele na session
@@ -85,7 +85,7 @@ public class LoginController {
 	@RequestMapping("logout")
 	public String logout(HttpSession session) {
 		try {
-			User user = (User) session.getAttribute("usuarioLogado");
+			UserVO user = (UserVO) session.getAttribute("usuarioLogado");
 			user.setAuthenticated(false);
 			session.invalidate();
 			return "redirect:loginForm";

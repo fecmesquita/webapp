@@ -14,7 +14,7 @@ import br.org.cip.CRMMock.config.StartH2Console;
 import br.org.cip.CRMMock.dao.FeriadoDao;
 import br.org.cip.CRMMock.dao.FeriadoDaoImpl;
 import br.org.cip.CRMMock.model.Feriado;
-import br.org.cip.CRMMock.model.User;
+import br.org.cip.CRMMock.model.UserVO;
 import br.org.cip.CRMMock.model.form.FeriadoForm;
 import br.org.cip.CRMMock.model.theme.Config;
 import br.org.cip.CRMMock.model.theme.ThemeType;
@@ -28,9 +28,9 @@ public class MainController {
 		
 		model.addAttribute("theme", Config.getInstance().getThemeType().getLabel());
 		
-		User user = (User) session.getAttribute("usuarioLogado");
+		UserVO user = (UserVO) session.getAttribute("usuarioLogado");
 		if(user==null) {
-			user = new User();
+			user = new UserVO();
 		}
 		model.addAttribute("user", user);
 		
@@ -41,10 +41,35 @@ public class MainController {
 		model.addAttribute("feriados", feriados);
 		
 		
+//		FeriadoForm feriadoForm = new FeriadoForm();
+//		model.addAttribute("feriadoform", feriadoForm );
+		
+		return new ModelAndView("home");
+	}
+	
+	@RequestMapping(value = "/home2")
+	public ModelAndView home2(HttpSession session, Model model) throws IOException {
+		System.out.println(Config.getInstance().getThemeType().getLabel());
+		
+		model.addAttribute("theme", Config.getInstance().getThemeType().getLabel());
+		
+		UserVO user = (UserVO) session.getAttribute("usuarioLogado");
+		if(user==null) {
+			user = new UserVO();
+		}
+		model.addAttribute("user", user);
+		
+		System.out.println(Config.getInstance().getThemeType().getLabel());
+		
+		FeriadoDao feriadosDao = new FeriadoDaoImpl();
+		List<Feriado> feriados = feriadosDao.getAllFeriados();
+		//model.addAttribute("feriados", feriados);
+		
+		
 		FeriadoForm feriadoForm = new FeriadoForm();
 		model.addAttribute("feriadoform", feriadoForm );
 		
-		return new ModelAndView("home");
+		return new ModelAndView("home2");
 	}
 
 	@RequestMapping(value = "/dbconsole")

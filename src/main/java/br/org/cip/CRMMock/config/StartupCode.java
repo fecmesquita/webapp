@@ -16,7 +16,7 @@ import br.org.cip.CRMMock.dao.FeriadoDaoImpl;
 import br.org.cip.CRMMock.dao.ThemeDao;
 import br.org.cip.CRMMock.dao.UserDao;
 import br.org.cip.CRMMock.dao.UserDaoImpl;
-import br.org.cip.CRMMock.model.User;
+import br.org.cip.CRMMock.model.UserVO;
 import br.org.cip.CRMMock.model.theme.Config;
 import br.org.cip.CRMMock.model.theme.ThemeType;
 
@@ -45,7 +45,7 @@ public class StartupCode {
 		}
 
 		UserDao userDao = new UserDaoImpl();
-		User user = new User();
+		UserVO user = new UserVO();
 		user.setId(1L);
 		user.setUsername("admin");
 		user.setPassword("admin");

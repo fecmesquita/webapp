@@ -8,7 +8,7 @@ http://xmlns.jcp.org/xml/ns/persistence/persistence_2_1.xsd"
 		<!-- implementacao do JPA (provedor) -->
 		<provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
 		<!-- entidade mapeada -->
-		<class>br.org.cip.CRMMock.model.User</class>
+		<class>br.org.cip.CRMMock.model.UserVO</class>
 		<properties>
 			<!-- conexao -->
 			<!-- <property name="javax.persistence.jdbc.driver" value="org.h2.Driver" 
