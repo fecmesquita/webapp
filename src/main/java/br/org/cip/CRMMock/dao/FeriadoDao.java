@@ -17,6 +17,8 @@ public interface FeriadoDao {
 	Feriado consultar(long id);
 
 	List<Feriado> getAllFeriados();
+
+	Feriado alterar(Feriado feriado);
 	
 //	long excluir(long id);
 	

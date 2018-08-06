@@ -1,5 +1,7 @@
 package br.org.cip.CRMMock.model;
 
+import java.io.Serializable;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -11,8 +13,10 @@ import org.hibernate.annotations.DynamicUpdate;
 
 @Entity
 @Table(name = "feriado")
-public class Feriado {
-
+public class Feriado implements Serializable{
+	
+	private static final long serialVersionUID = 2802416464330166324L;
+	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long id;

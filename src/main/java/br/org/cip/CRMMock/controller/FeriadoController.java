@@ -10,6 +10,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -103,7 +104,7 @@ public class FeriadoController {
 	}
 	
 	@RequestMapping(value = "/feriado/alterar", method=RequestMethod.POST)
-	public String alterarFeriado(@ModelAttribute("feriadoForm") FeriadoForm feriadoForm, HttpSession session, Model model, RedirectAttributes attributes) {
+	public String alterarFeriadoForm(@ModelAttribute("feriadoForm") FeriadoForm feriadoForm, HttpSession session, Model model, RedirectAttributes attributes) {
 		model.addAttribute("theme", Config.getInstance().getThemeType().getLabel());
 		
 		UserVO user = (UserVO) session.getAttribute("usuarioLogado");
@@ -122,6 +123,8 @@ public class FeriadoController {
 
 		return "redirect:/feriado/consultar/" + id;
 	}
+	
+	
 	
 	@RequestMapping(value = "/feriado/consultar/{feriadoId}", method=RequestMethod.GET)
 	public String feriadoDetails(@PathVariable String feriadoId, HttpSession session, Model model,@ModelAttribute("message") String message) {

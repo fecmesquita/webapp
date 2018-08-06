@@ -51,11 +51,11 @@ public class FeriadoDaoImpl implements FeriadoDao {
 		Feriado feriado = consultar(id);
 		feriado.setTipoRequisicao(tipoRequisicao);
 		feriado.setSituacao("Inativo(a)");
-		alterar(feriado);
+		feriado = alterar(feriado);
 		return feriado.getId();
 	}
 
-	private void alterar(Feriado feriado) {
+	public Feriado alterar(Feriado feriado) {
 		EntityManagerFactory factory = Persistence.createEntityManagerFactory("webappdb");
 		EntityManager manager = factory.createEntityManager();
 		try {
@@ -67,7 +67,8 @@ public class FeriadoDaoImpl implements FeriadoDao {
 				manager.getTransaction().rollback();
 		}
 		manager.close();
-		factory.close();		
+		factory.close();
+		return feriado;		
 	}
 
 	@Override
@@ -75,7 +76,7 @@ public class FeriadoDaoImpl implements FeriadoDao {
 		Feriado feriado = consultar(id);
 		feriado.setTipoRequisicao(tipoRequisicao);
 		feriado.setSituacao("Ativo(a)");
-		alterar(feriado);
+		feriado = alterar(feriado);
 		return feriado.getId();
 	}
 

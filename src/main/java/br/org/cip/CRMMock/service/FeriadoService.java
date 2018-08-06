@@ -20,6 +20,10 @@ public class FeriadoService {
 		return feriadoDao.alterar(id, tipoRequisicao, data, situacao, tipoFeriado, descricao);
 	}
 	
+	public Feriado alterar(Feriado feriado) {
+		return feriadoDao.alterar(feriado);
+	}
+	
 	public Feriado getFeriado(long id) {
 		return feriadoDao.consultar(id);
 	}
