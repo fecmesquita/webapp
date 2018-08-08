@@ -1,6 +1,7 @@
 package br.org.cip.CRMMock.model;
 
 import java.io.Serializable;
+import java.util.Set;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -11,10 +12,11 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import org.hyperledger.fabric.sdk.Enrollment;
+import org.hyperledger.fabric.sdk.User;
 
 @Entity
 @Table(name = "user")
-public class UserVO implements Serializable{
+public class UserVO implements User, Serializable{
 	
 	private static final long serialVersionUID = 4581848629921562132L;
 	
@@ -25,14 +27,31 @@ public class UserVO implements Serializable{
 	private String username;
 	
 	@Column(name = "password")
-	String password;
+	private String password;
 	
 	@Transient
 	private boolean authenticated;
 	
 	@Transient
 	private Enrollment enrollment;
+
+	@Column(name = "afiliacao")
+	private String affiliation;
+
+	@Column(name = "mspId")
+	private String mspId;
 	
+	public UserVO() {
+		super();
+	}
+	
+	public UserVO(String name, String affiliation, String mspId, Enrollment enrollment) {
+        this.username = name;
+        this.affiliation = affiliation;
+        this.enrollment = enrollment;
+        this.mspId = mspId;
+    }
+
 	public Enrollment getEnrollment() {
 		return enrollment;
 	}
@@ -76,6 +95,31 @@ public class UserVO implements Serializable{
 	@Override
 	public String toString() {
 		return "User [id=" + id + ", name=" + username+ "]";
+	}
+
+	@Override
+	public String getName() {
+		return this.getUsername();
+	}
+
+	@Override
+	public Set<String> getRoles() {
+		return null;
+	}
+
+	@Override
+	public String getAccount() {
+		return null;
+	}
+
+	@Override
+	public String getAffiliation() {
+		return null;
+	}
+
+	@Override
+	public String getMspId() {
+		return null;
 	}
 
 }
