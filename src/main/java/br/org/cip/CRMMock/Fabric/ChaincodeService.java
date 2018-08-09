@@ -1,39 +1,66 @@
 package br.org.cip.CRMMock.Fabric;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Properties;
 
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+
+import org.hyperledger.fabric.sdk.ChaincodeID;
 import org.hyperledger.fabric.sdk.Channel;
+import org.hyperledger.fabric.sdk.ChaincodeResponse;
 import org.hyperledger.fabric.sdk.Enrollment;
 import org.hyperledger.fabric.sdk.EventHub;
 import org.hyperledger.fabric.sdk.HFClient;
 import org.hyperledger.fabric.sdk.Orderer;
 import org.hyperledger.fabric.sdk.Peer;
+import org.hyperledger.fabric.sdk.ProposalResponse;
+import org.hyperledger.fabric.sdk.QueryByChaincodeRequest;
 import org.hyperledger.fabric.sdk.exception.CryptoException;
 import org.hyperledger.fabric.sdk.exception.InvalidArgumentException;
+import org.hyperledger.fabric.sdk.exception.ProposalException;
 import org.hyperledger.fabric.sdk.exception.TransactionException;
 import org.hyperledger.fabric.sdk.security.CryptoSuite;
 import org.hyperledger.fabric_ca.sdk.HFCAClient;
 import org.hyperledger.fabric_ca.sdk.RegistrationRequest;
+import org.springframework.stereotype.Service;
 
+import com.google.protobuf.ByteString;
+
+import br.org.cip.CRMMock.model.Feriado;
 import br.org.cip.CRMMock.model.UserVO;
 
+//@Service
 public class ChaincodeService {
 
+	
+	//TODO resgister user admin...
 	private static HFCAClient caClient;// = getHfCaClient("http://localhost:7054", null);
 	private static UserVO admin;// = getAdmin(caClient);
-	//private static UserVO user = getUser(caClient, admin, "hfuser");
+	private static UserVO appUser;
+	//private static UserVO appUser = getUser(caClient, admin, "hfuser");
 	private static HFClient client;// = getHfClient();
 	private static Channel channel;// = getChannel(client);
 	
 	public ChaincodeService() throws Exception{
 		caClient = getHfCaClient("http://localhost:7054", null);
 		admin = getAdmin(caClient);
+		//appUser = getUser(caClient, admin, "hfuser");
 		client = getHfClient();
         client.setUserContext(admin);
         channel = getChannel(client);
@@ -206,8 +233,62 @@ public class ChaincodeService {
     }
     
     
-    
-    
+    public List<Feriado> getAllFeriados() throws InvalidArgumentException, ProposalException  {
+		
+		
+        // create chaincode request
+        QueryByChaincodeRequest qpr = client.newQueryProposalRequest();
+
+        ChaincodeID fabcarCCId = ChaincodeID.newBuilder().setName("minerva-app").build();
+        qpr.setChaincodeID(fabcarCCId);
+        qpr.setFcn("queryAllFeriado");
+		
+        Collection<ProposalResponse> responses = channel.queryByChaincode(qpr);
+         
+        for (ProposalResponse response : responses) {
+            if (response.isVerified() && response.getStatus() == ChaincodeResponse.Status.SUCCESS) {
+                ByteString payload = response.getProposalResponse().getResponse().getPayload();
+                //System.out.println("OKKK " + payload.toStringUtf8());
+                try (JsonReader jsonReader = Json.createReader(new ByteArrayInputStream(payload.toByteArray()))) {
+                    // parse response
+                    JsonArray arr = jsonReader.readArray();
+                    //Map<String, Feriado> feriados = new HashMap<>();
+                    List<Feriado> feriados = new ArrayList<Feriado>();
+                    for (int i = 0; i < arr.size(); i++) {
+                        JsonObject rec = arr.getJsonObject(i);
+                        //System.out.println(rec);
+                        generateFeriado(rec);
+                        Feriado feriadoRecord = generateFeriado(rec);
+                        feriados.add(feriadoRecord);
+                    }
+                    return feriados;
+                }
+            } else {
+               // log.error("response failed. status: " + response.getStatus().getStatus());
+            }
+        }
+        return null;
+    }
+
+	private Feriado generateFeriado(JsonObject rec) {
+		
+    		long key = Long.parseLong(rec.get("Key").toString().substring(1, rec.get("Key").toString().length()-1));
+    		String tipoRequisicao = rec.get("Record").asJsonObject().getString("tipoRequisicao");
+		String data = rec.get("Record").asJsonObject().get("data").toString();
+		String descricao = rec.get("Record").asJsonObject().getString("descricao");
+		String situacao = rec.get("Record").asJsonObject().getString("situacao");
+		String tipoFeriado= rec.get("Record").asJsonObject().getString("tipoFeriado");
+		Feriado feriado = new Feriado();
+		feriado.setData(data);
+		feriado.setDescricao(descricao);
+		feriado.setId(key);
+		feriado.setSituacao(situacao);
+		feriado.setTipoFeriado(tipoFeriado);
+		feriado.setTipoRequisicao(tipoRequisicao);
+		
+		return feriado;
+	
+	}
     
     
 }

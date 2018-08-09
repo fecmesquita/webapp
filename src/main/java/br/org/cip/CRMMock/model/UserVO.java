@@ -114,12 +114,12 @@ public class UserVO implements User, Serializable{
 
 	@Override
 	public String getAffiliation() {
-		return null;
+		return affiliation;
 	}
 
 	@Override
 	public String getMspId() {
-		return null;
+		return mspId;
 	}
 
 }

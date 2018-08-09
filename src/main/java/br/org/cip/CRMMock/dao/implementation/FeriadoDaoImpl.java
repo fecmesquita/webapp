@@ -1,4 +1,4 @@
-package br.org.cip.CRMMock.dao;
+package br.org.cip.CRMMock.dao.implementation;
 
 import java.util.List;
 
@@ -9,6 +9,7 @@ import javax.transaction.Transactional;
 
 import org.springframework.stereotype.Repository;
 
+import br.org.cip.CRMMock.dao.FeriadoDao;
 import br.org.cip.CRMMock.model.Feriado;
 
 @Repository

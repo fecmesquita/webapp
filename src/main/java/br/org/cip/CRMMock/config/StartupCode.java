@@ -12,10 +12,10 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 import br.org.cip.CRMMock.dao.FeriadoDao;
-import br.org.cip.CRMMock.dao.FeriadoDaoImpl;
 import br.org.cip.CRMMock.dao.ThemeDao;
 import br.org.cip.CRMMock.dao.UserDao;
-import br.org.cip.CRMMock.dao.UserDaoImpl;
+import br.org.cip.CRMMock.dao.implementation.FeriadoDaoImpl;
+import br.org.cip.CRMMock.dao.implementation.UserDaoImpl;
 import br.org.cip.CRMMock.model.UserVO;
 import br.org.cip.CRMMock.model.theme.Config;
 import br.org.cip.CRMMock.model.theme.ThemeType;

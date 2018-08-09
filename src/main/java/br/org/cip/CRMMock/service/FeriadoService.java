@@ -1,5 +1,7 @@
 package br.org.cip.CRMMock.service;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -34,6 +36,10 @@ public class FeriadoService {
 	
 	public long inativar(Long id, String tipoRequisicao) {
 		return feriadoDao.inativar(id, tipoRequisicao);
+	}
+	
+	public List<Feriado> getAllFeriados() {
+		return feriadoDao.getAllFeriados();
 	}
 
 	/*public long delete(long feriadoId) {

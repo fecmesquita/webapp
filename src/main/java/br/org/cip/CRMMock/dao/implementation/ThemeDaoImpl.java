@@ -1,4 +1,4 @@
-package br.org.cip.CRMMock.dao;
+package br.org.cip.CRMMock.dao.implementation;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -6,6 +6,7 @@ import javax.persistence.Persistence;
 
 import org.springframework.stereotype.Repository;
 
+import br.org.cip.CRMMock.dao.ThemeDao;
 import br.org.cip.CRMMock.model.theme.Config;
 
 @Repository

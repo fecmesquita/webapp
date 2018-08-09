@@ -1,7 +1,7 @@
 package br.org.cip.CRMMock.config;
 
 import br.org.cip.CRMMock.dao.FeriadoDao;
-import br.org.cip.CRMMock.dao.FeriadoDaoImpl;
+import br.org.cip.CRMMock.dao.implementation.FeriadoDaoImpl;
 
 public class GerarDados {
 

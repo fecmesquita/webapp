@@ -1,4 +1,4 @@
-package br.org.cip.CRMMock.dao;
+package br.org.cip.CRMMock.dao.implementation;
 
 import java.util.List;
 
@@ -8,6 +8,7 @@ import javax.persistence.Persistence;
 
 import org.springframework.stereotype.Repository;
 
+import br.org.cip.CRMMock.dao.UserDao;
 import br.org.cip.CRMMock.model.UserVO;
 
 @Repository
