@@ -48,9 +48,10 @@ public class MainController {
 		
 		//System.out.println(Config.getInstance().getThemeType().getLabel());
 		
-		List<Feriado> feriados = feriadoService.getAllFeriados();
-		model.addAttribute("feriados", feriados);
-		/*
+		
+		/*List<Feriado> feriados = feriadoService.getAllFeriados();
+		model.addAttribute("feriados", feriados);*/
+		
 		ChaincodeService chaincodeService = new ChaincodeService();
 		List<Feriado> feriados;
 		try {
@@ -60,7 +61,7 @@ public class MainController {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		*/
+		
 		
 		return new ModelAndView("home");
 	}

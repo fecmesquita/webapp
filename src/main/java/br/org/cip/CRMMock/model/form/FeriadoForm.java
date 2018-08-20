@@ -6,7 +6,7 @@ public class FeriadoForm {
 	private String tipoRequisicao;
 	private String data;
 	private String situacao;
-	private String tipoferiado;
+	private String tipoFeriado;
 	private String descricao;
 
 	public Long getId() {
@@ -41,12 +41,12 @@ public class FeriadoForm {
 		this.situacao = situacao;
 	}
 
-	public String getTipoferiado() {
-		return tipoferiado;
+	public String getTipoFeriado() {
+		return tipoFeriado;
 	}
 
-	public void setTipoferiado(String tipoferiado) {
-		this.tipoferiado = tipoferiado;
+	public void setTipoFeriado(String tipoferiado) {
+		this.tipoFeriado = tipoferiado;
 	}
 
 	public String getDescricao() {

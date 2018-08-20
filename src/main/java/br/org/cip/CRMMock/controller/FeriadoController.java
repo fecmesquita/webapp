@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import br.org.cip.CRMMock.Fabric.ChaincodeService;
 import br.org.cip.CRMMock.model.Feriado;
 import br.org.cip.CRMMock.model.UserVO;
 import br.org.cip.CRMMock.model.form.FeriadoForm;
@@ -30,6 +31,9 @@ public class FeriadoController {
 
 	@Autowired
 	private FeriadoService feriadoService;
+	
+	@Autowired
+	private ChaincodeService chaincodeService;
 	
 	@RequestMapping(value = "/feriado/incluir")
 	public String incluirFeriado(@ModelAttribute("feriado") Feriado feriado, HttpSession session, Model model) throws IOException {
@@ -75,7 +79,9 @@ public class FeriadoController {
 		
 		model.addAttribute("action", "alterar");
 		
-		model.addAttribute("feriado", feriadoService.getFeriado(Integer.parseInt(feriadoId)));
+		//model.addAttribute("feriado", feriadoService.getFeriado(Integer.parseInt(feriadoId)));
+		
+		model.addAttribute("feriado", chaincodeService.getFeriado(feriadoId));
 
 		return "feriadoForm";
 	}
@@ -85,6 +91,8 @@ public class FeriadoController {
 		model.addAttribute("theme", Config.getInstance().getThemeType().getLabel());
 		
 		System.out.println("Situacao: "+feriadoForm.getSituacao());
+		System.out.println("TipoFeriado: "+feriadoForm.getTipoFeriado());
+		System.out.println("TipoRequisicao: "+feriadoForm.getTipoRequisicao());
 		
 		//System.out.println( Theme.theme.equals(ThemeType.CRM));
 		
@@ -94,9 +102,10 @@ public class FeriadoController {
 		}
 		model.addAttribute("user", user);
 		
+		//long id = feriadoService.incluir("Efetivar", feriadoForm.getData(), feriadoForm.getSituacao(), feriadoForm.getTipoferiado(), feriadoForm.getDescricao());
 		
-		long id = feriadoService.incluir("Efetivar", feriadoForm.getData(), feriadoForm.getSituacao(), feriadoForm.getTipoferiado(), feriadoForm.getDescricao());
-	
+		long id = chaincodeService.recordFeriado(feriadoForm.getData(), feriadoForm.getDescricao(), feriadoForm.getSituacao(), feriadoForm.getTipoFeriado(), "Efetivar");
+		
 		model.addAttribute("message", "Feriado criado!");
 		attributes.addFlashAttribute("message", "Feriado criado!");
 		
@@ -113,12 +122,10 @@ public class FeriadoController {
 		}
 		model.addAttribute("user", user);
 		
-		System.out.println("FeriadoFormId: " + feriadoForm.getId());
-//		System.out.println("FeriadoId" + feriadoId);
-		
-		long id = feriadoService.alterar(feriadoForm.getId(), "Efetivar", feriadoForm.getData(), feriadoForm.getSituacao(), feriadoForm.getTipoferiado(), feriadoForm.getDescricao());
+		//long id = feriadoService.alterar(feriadoForm.getId(), "Efetivar", feriadoForm.getData(), feriadoForm.getSituacao(), feriadoForm.getTipoFeriado(), feriadoForm.getDescricao());
 
-//		model.addAttribute("message", "Feriado alterado com sucesso!");
+		long id = chaincodeService.changeFeriado(feriadoForm.getData(), feriadoForm.getDescricao(), feriadoForm.getSituacao(), feriadoForm.getTipoFeriado(), "Efetivar");
+		
 		attributes.addFlashAttribute("message", "Feriado alterado com sucesso!");
 
 		return "redirect:/feriado/consultar/" + id;
@@ -137,7 +144,9 @@ public class FeriadoController {
 		
 		model.addAttribute("message", message);
 		
-		Feriado feriado = feriadoService.getFeriado(Integer.parseInt(feriadoId));
+		//Feriado feriado = feriadoService.getFeriado(Integer.parseInt(feriadoId));
+		
+		Feriado feriado = chaincodeService.getFeriado(feriadoId);
 		
 		model.addAttribute("feriado", feriado);
 
@@ -145,7 +154,7 @@ public class FeriadoController {
 	}
 	
 	@RequestMapping(value = "/feriado/ativar/{feriadoId}", method=RequestMethod.GET)
-	public String ativarFeriado(@PathVariable String feriadoId, HttpSession session, Model model, RedirectAttributes attributes) {
+	public String ativarFeriado(@PathVariable String feriadoId, HttpSession session, Model model) {
 		model.addAttribute("theme", Config.getInstance().getThemeType().getLabel());
 		UserVO user = (UserVO) session.getAttribute("usuarioLogado");
 		if (user == null) {
@@ -153,16 +162,17 @@ public class FeriadoController {
 		}
 		model.addAttribute("user", user);
 		
-		feriadoService.ativar(Long.parseLong(feriadoId), "Efetivar");//TODO
+		//feriadoService.ativar(Long.parseLong(feriadoId), "Efetivar");
 		
+		chaincodeService.changeFeriadoSituacao(feriadoId, "ativar");
 		
-		attributes.addFlashAttribute("message", "Feriado excluido com sucesso.");
+		//attributes.addFlashAttribute("message", "Feriado excluido com sucesso.");
 
 		return "redirect:/";
 	}
 	
 	@RequestMapping(value = "/feriado/inativar/{feriadoId}", method=RequestMethod.GET)
-	public String inativarFeriado(@PathVariable String feriadoId, HttpSession session, Model model, RedirectAttributes attributes) {
+	public String inativarFeriado(@PathVariable String feriadoId, HttpSession session, Model model) {
 		model.addAttribute("theme", Config.getInstance().getThemeType().getLabel());
 		UserVO user = (UserVO) session.getAttribute("usuarioLogado");
 		if (user == null) {
@@ -170,10 +180,11 @@ public class FeriadoController {
 		}
 		model.addAttribute("user", user);
 		
-		feriadoService.inativar(Long.parseLong(feriadoId), "Efetivar");//TODO
+		//feriadoService.inativar(Long.parseLong(feriadoId), "Efetivar");
 		
+		chaincodeService.changeFeriadoSituacao(feriadoId, "inativar");
 		
-		attributes.addFlashAttribute("message", "Feriado excluido com sucesso.");
+		//attributes.addFlashAttribute("message", "Feriado excluido com sucesso.");
 
 		return "redirect:/";
 	}
