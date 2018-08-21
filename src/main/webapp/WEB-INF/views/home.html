@@ -19,7 +19,7 @@
 		<nav class="navbar navbar-expand-lg navbar-light"
 			th:classappend="${theme} + -primary">
 			<a class="navbar-brand" th:href="@{/}"> <span class="text-white"
-				th:utext="${theme} ? 'Gestão de Relacionamento' : 'WEBCIP'"></span>
+				th:utext="${theme.equals('crm')} ? 'Gestão de Relacionamento' : 'WEBCIP'"></span>
 			</a>
 			<button class="navbar-toggler " type="button" data-toggle="collapse"
 				data-target="#navbar" aria-controls="navbarSupportedContent"
@@ -31,18 +31,28 @@
 				<ul class="navbar-nav mr-auto">
 					<li class="nav-item"><a class="nav-link text-white"
 						href="/CRMMock/dbconsole">DBConsole</a></li>
-					<li class="nav-item"><a class="nav-link text-white" th:href="@{/}">Início</a></li>
-					<div th:switch="${user.authenticated}">
-						<li th:case="true" class="nav-item"><a class="nav-link text-white"
-							th:href="@{/logout}">Logout</a></li>
-						<li th:case="false" class="nav-item"><a class="nav-link text-white"
-							th:href="@{/loginForm}">Login</a></li>
-					</div>
+					<li class="nav-item"><a class="nav-link text-white"
+						th:href="@{/}">Início</a></li>
+					
 				</ul>
-				<a>
-						<span class="text-white"th:utext="${user.username}"></span>
-				</a>
+				<div class="text-white" th:switch="${user.authenticated}">
+						<!-- <li th:case="true" class="nav-item"><a class="nav-link" th:href="@{/logout}">Logout</a></li>
+						<li th:case="false" class="nav-item"><a class="nav-link" th:href="@{/loginForm}">Login</a></li> -->
+
+
+						<div th:case="true" class="dropdown">
+							<button class="btn btn-sm btn-primary dropdown-toggle"
+								type="button" data-toggle="dropdown">
+								<span th:utext="${user.username}"></span>
+							</button>
+							<div class="dropdown-menu">
+								<a class="dropdown-item" th:href="@{/logout}">Sair</a>
+							</div>
+						</div>
+						<a th:case="false" class="nav-link active" th:href="@{/loginForm}">Login</a>
+					</div>
 			</div>
+
 		</nav>
 
 		<ul class="nav justify-content-center bg-light">
@@ -72,7 +82,8 @@
 				</tr>
 			</thead>
 			<tbody>
-				<tr th:each="feriado : ${feriados}" th:switch="${feriado.situacao.equals('Ativo(a)')}">
+				<tr th:each="feriado : ${feriados}"
+					th:switch="${feriado.situacao.equals('Ativo(a)')}">
 					<td scope="row" th:text="${feriado.descricao}"></td>
 					<td scope="row" th:text="${feriado.data}"></td>
 					<td scope="row" th:text="${feriado.tipoFeriado}"></td>

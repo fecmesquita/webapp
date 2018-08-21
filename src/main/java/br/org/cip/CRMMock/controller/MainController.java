@@ -30,8 +30,8 @@ public class MainController {
 	@Autowired
 	private FeriadoService feriadoService;
 	
-	//@Autowired
-	//private ChaincodeService chaincodeService;
+	@Autowired
+	private ChaincodeService chaincodeService;
 	
 	@RequestMapping(value = "/")
 	public ModelAndView index(HttpSession session, Model model) throws Exception {
@@ -45,14 +45,9 @@ public class MainController {
 		}
 		model.addAttribute("user", user);
 		
-		
-		//System.out.println(Config.getInstance().getThemeType().getLabel());
-		
-		
 		/*List<Feriado> feriados = feriadoService.getAllFeriados();
 		model.addAttribute("feriados", feriados);*/
 		
-		ChaincodeService chaincodeService = new ChaincodeService();
 		List<Feriado> feriados;
 		try {
 			feriados = chaincodeService.getAllFeriados();
