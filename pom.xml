@@ -106,18 +106,19 @@
 			<artifactId>spring-jdbc</artifactId>
 			<version>5.0.7.RELEASE</version>
 		</dependency>
-		
+
 		<!-- Hyperledger Fabric Java SDK -->
 		<dependency>
-            <groupId>org.hyperledger.fabric-sdk-java</groupId>
-            <artifactId>fabric-sdk-java</artifactId>
-            <version>1.1.0</version>
-        </dependency>
-        
-       
+			<groupId>org.hyperledger.fabric-sdk-java</groupId>
+			<artifactId>fabric-sdk-java</artifactId>
+			<version>1.1.0</version>
+		</dependency>
 
-        
-
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+			<version>1.0.13</version>
+		</dependency>
 
 	</dependencies>
 

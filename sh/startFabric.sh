@@ -1,5 +1,5 @@
 #!/bin/bash
-# v. 0.12
+# v. 0.14.4
 # docker exec -it cli bash
 # SPDX-License-Identifier: Apache-2.0
 # This code is based on code written by the Hyperledger Fabric community. 

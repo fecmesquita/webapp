@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+	<timestamp key="byDate" datePattern="dd_MMM_yyyy" />
+
+	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder>
+			<pattern>%date{HH:mm:ss.SSS} [%thread] %-5level %logger - %message %n
+			</pattern>
+		</encoder>
+	</appender>
+
+	<appender name="FILE" class="ch.qos.logback.core.FileAppender">
+		<file>/Users/Felipe/Documents/Minerva/FILE_${byDate}.log</file>
+
+		<encoder>
+			<pattern>%date{HH:mm:ss.SSS} [%thread] %-5level %logger - %message %n
+			</pattern>
+		</encoder>
+	</appender>
+
+	<appender name="Webapp" class="ch.qos.logback.core.FileAppender">
+		<file>/Users/Felipe/Documents/Minerva/Log_${byDate}.log</file>
+
+		<encoder>
+			<pattern>%date{HH:mm:ss.SSS} [%thread] %-5level %logger - %message %n
+			</pattern>
+		</encoder>
+	</appender>
+
+	<logger name="br.org.cip" level="DEBUG" additivity="false">
+		<appender-ref ref="Webapp" />
+	</logger>
+
+	<root level="debug">
+		<appender-ref ref="STDOUT" />
+		<appender-ref ref="FILE" />
+	</root>
+</configuration>

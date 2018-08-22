@@ -2,33 +2,32 @@ package br.org.cip.CRMMock.controller;
 
 import java.io.IOException;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import br.org.cip.CRMMock.Fabric.ChaincodeService;
 import br.org.cip.CRMMock.model.Feriado;
 import br.org.cip.CRMMock.model.UserVO;
 import br.org.cip.CRMMock.model.form.FeriadoForm;
-import br.org.cip.CRMMock.model.form.LoginForm;
 import br.org.cip.CRMMock.model.theme.Config;
-import br.org.cip.CRMMock.model.theme.ThemeType;
 import br.org.cip.CRMMock.service.FeriadoService;
+
 
 @Controller
 public class FeriadoController {
 
+	private static final Logger log = LoggerFactory.getLogger(FeriadoController.class);
+			
 	@Autowired
 	private FeriadoService feriadoService;
 	
@@ -167,7 +166,7 @@ public class FeriadoController {
 		chaincodeService.changeFeriadoSituacao(feriadoId, "ativar");
 		
 		//attributes.addFlashAttribute("message", "Feriado excluido com sucesso.");
-
+		log.debug("Teste consulta");
 		return "redirect:/";
 	}
 	

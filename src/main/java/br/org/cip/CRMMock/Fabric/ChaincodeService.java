@@ -83,7 +83,7 @@ public class ChaincodeService {
 			EventHub eventHub = client.newEventHub("eventhub01", "grpc://localhost:7053");
 			// orderer name and endpoint in fabcar network
 			Orderer orderer = client.newOrderer("orderer.example.com", "grpc://localhost:7050");
-			// channel name in fabcar network
+			// channel name in network
 			Channel channel = client.newChannel("mychannel");
 			channel.addPeer(peer);
 			channel.addEventHub(eventHub);
@@ -244,8 +244,8 @@ public class ChaincodeService {
 		// create chaincode request
 		QueryByChaincodeRequest qpr = client.newQueryProposalRequest();
 
-		ChaincodeID fabcarCCId = ChaincodeID.newBuilder().setName("minerva-app").build();
-		qpr.setChaincodeID(fabcarCCId);
+		ChaincodeID minervaCCId = ChaincodeID.newBuilder().setName("minerva-app").build();
+		qpr.setChaincodeID(minervaCCId);
 		qpr.setFcn("queryAllFeriado");
 
 		Collection<ProposalResponse> responses = channel.queryByChaincode(qpr);
@@ -340,12 +340,12 @@ public class ChaincodeService {
 			resps = channel.sendTransactionProposal(req);
 			Future<TransactionEvent> future = channel.sendTransaction(resps);
 			future.get();
-			// display response
+			/*// display response
 			for (ProposalResponse pres : resps) {
 				
 				String stringResponse = new String(pres.getChaincodeActionResponsePayload());
 				System.out.println("Criado: " + stringResponse);
-			}
+			}*/
 		} catch (ProposalException | InvalidArgumentException | InterruptedException | ExecutionException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
