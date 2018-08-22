@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.StringReader;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -18,6 +19,7 @@ import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
+import javax.management.RuntimeErrorException;
 
 import org.hyperledger.fabric.sdk.BlockEvent.TransactionEvent;
 import org.hyperledger.fabric.sdk.ChaincodeID;
@@ -38,15 +40,20 @@ import org.hyperledger.fabric.sdk.exception.TransactionException;
 import org.hyperledger.fabric.sdk.security.CryptoSuite;
 import org.hyperledger.fabric_ca.sdk.HFCAClient;
 import org.hyperledger.fabric_ca.sdk.RegistrationRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import com.google.protobuf.ByteString;
 
+import br.org.cip.CRMMock.controller.FeriadoController;
 import br.org.cip.CRMMock.model.Feriado;
 import br.org.cip.CRMMock.model.UserVO;
 
 @Service
 public class ChaincodeService {
+
+	private static final Logger log = LoggerFactory.getLogger(ChaincodeService.class);
 
 	// TODO resgister user admin...
 	private static HFCAClient caClient;// = getHfCaClient("http://localhost:7054", null);
@@ -299,10 +306,11 @@ public class ChaincodeService {
 		return feriado;
 
 	}
-	
+
 	private Feriado generateFeriado(JsonObject rec) {
 
-		//long key = Long.parseLong(rec.get("Key").toString().substring(1, rec.get("Key").toString().length() - 1));
+		// long key = Long.parseLong(rec.get("Key").toString().substring(1,
+		// rec.get("Key").toString().length() - 1));
 		String tipoRequisicao = rec.asJsonObject().getString("tipoRequisicao");
 		String data = rec.asJsonObject().getString("data");
 		String[] fields = data.split("/");
@@ -325,8 +333,9 @@ public class ChaincodeService {
 		return feriado;
 
 	}
-	
-	public long recordFeriado(String data, String descricao, String situacao, String tipoFeriado, String tipoRequisicao) {
+
+	public long recordFeriado(String data, String descricao, String situacao, String tipoFeriado,
+			String tipoRequisicao) {
 
 		TransactionProposalRequest req = client.newTransactionProposalRequest();
 		ChaincodeID cid = ChaincodeID.newBuilder().setName("minerva-app").build();
@@ -340,22 +349,25 @@ public class ChaincodeService {
 			resps = channel.sendTransactionProposal(req);
 			Future<TransactionEvent> future = channel.sendTransaction(resps);
 			future.get();
-			/*// display response
+
+			// display response
 			for (ProposalResponse pres : resps) {
-				
+
 				String stringResponse = new String(pres.getChaincodeActionResponsePayload());
 				System.out.println("Criado: " + stringResponse);
-			}*/
+				JsonReader jsonReader = Json.createReader(new StringReader(stringResponse));
+				JsonObject rec = jsonReader.readObject();
+				return Long.parseLong(rec.getString("Key"));
+			}
+			throw new RuntimeException();
 		} catch (ProposalException | InvalidArgumentException | InterruptedException | ExecutionException e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
+			throw new RuntimeException();
 		}
-		
-		return 1;
-
 	}
-	
-	public long changeFeriado(String data, String descricao, String situacao, String tipoFeriado, String tipoRequisicao) {
+
+	public long changeFeriado(String data, String descricao, String situacao, String tipoFeriado,
+			String tipoRequisicao) {
 
 		TransactionProposalRequest req = client.newTransactionProposalRequest();
 		ChaincodeID cid = ChaincodeID.newBuilder().setName("minerva-app").build();
@@ -371,85 +383,86 @@ public class ChaincodeService {
 			future.get();
 			// display response
 			for (ProposalResponse pres : resps) {
-				
+
 				String stringResponse = new String(pres.getChaincodeActionResponsePayload());
 				System.out.println("Alterado: " + stringResponse);
-				
+
 				if (pres.isVerified() && pres.getStatus() == ChaincodeResponse.Status.SUCCESS) {
 					ByteString payload = pres.getProposalResponse().getResponse().getPayload();
 					// System.out.println("OKKK " + payload.toStringUtf8());
 					try (JsonReader jsonReader = Json.createReader(new ByteArrayInputStream(payload.toByteArray()))) {
 						// parse response
-						//JsonArray arr = jsonReader.readArray();
-						//for (int i = 0; i < arr.size(); i++) {
-							JsonObject rec = jsonReader.readObject();
-							
-							System.out.println(rec.get("Key").toString());
-						//}
-							return Long.parseLong(rec.getString("Key"));
+						// JsonArray arr = jsonReader.readArray();
+						// for (int i = 0; i < arr.size(); i++) {
+						JsonObject rec = jsonReader.readObject();
+
+						System.out.println(rec.get("Key").toString());
+						// }
+						return Long.parseLong(rec.getString("Key"));
 					}
 				}
 			}
 		} catch (ProposalException | InvalidArgumentException | InterruptedException | ExecutionException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
-			
+
 		}
 		throw new RuntimeException();
 	}
 
 	public Feriado getFeriado(String feriadoId) {
 		// create chaincode request
-				QueryByChaincodeRequest qpr = client.newQueryProposalRequest();
+		QueryByChaincodeRequest qpr = client.newQueryProposalRequest();
 
-				ChaincodeID fabcarCCId = ChaincodeID.newBuilder().setName("minerva-app").build();
-				qpr.setChaincodeID(fabcarCCId);
-				qpr.setFcn("consultar");
-				qpr.setArgs(new String[] { feriadoId });
+		ChaincodeID fabcarCCId = ChaincodeID.newBuilder().setName("minerva-app").build();
+		qpr.setChaincodeID(fabcarCCId);
+		qpr.setFcn("consultar");
+		qpr.setArgs(new String[] { feriadoId });
 
-				Collection<ProposalResponse> responses;
-				try {
-					responses = channel.queryByChaincode(qpr);
-				
-					for (ProposalResponse response : responses) {
-						if (response.isVerified() && response.getStatus() == ChaincodeResponse.Status.SUCCESS) {
-							ByteString payload = response.getProposalResponse().getResponse().getPayload();
-							// System.out.println("OKKK " + payload.toStringUtf8());
-							try (JsonReader jsonReader = Json.createReader(new ByteArrayInputStream(payload.toByteArray()))) {
-								// parse response
-								JsonObject rec = jsonReader.readObject();
-								//JsonArray arr = jsonReader.readArray();
-								// Map<String, Feriado> feriados = new HashMap<>();
-								//List<Feriado> feriados = new ArrayList<Feriado>();
-								//for (int i = 0; i < arr.size(); i++) {
-									//JsonObject rec = arr.getJsonObject(0);
-									System.out.println(rec);
-									// generateFeriado(rec);
-									Feriado feriadoRecord = generateFeriado(rec);
-									//feriados.add(feriadoRecord);
-								//}
-								return feriadoRecord;
-							}
-						} else {
-							// log.error("response failed. status: " + response.getStatus().getStatus());
-						}
+		Collection<ProposalResponse> responses;
+		try {
+			responses = channel.queryByChaincode(qpr);
+
+			for (ProposalResponse response : responses) {
+				if (response.isVerified() && response.getStatus() == ChaincodeResponse.Status.SUCCESS) {
+					ByteString payload = response.getProposalResponse().getResponse().getPayload();
+					// System.out.println("OKKK " + payload.toStringUtf8());
+					try (JsonReader jsonReader = Json.createReader(new ByteArrayInputStream(payload.toByteArray()))) {
+						// parse response
+						JsonObject rec = jsonReader.readObject();
+						// JsonArray arr = jsonReader.readArray();
+						// Map<String, Feriado> feriados = new HashMap<>();
+						// List<Feriado> feriados = new ArrayList<Feriado>();
+						// for (int i = 0; i < arr.size(); i++) {
+						// JsonObject rec = arr.getJsonObject(0);
+						System.out.println(rec);
+						// generateFeriado(rec);
+						Feriado feriadoRecord = generateFeriado(rec);
+						// feriados.add(feriadoRecord);
+						// }
+						return feriadoRecord;
 					}
-				} catch (InvalidArgumentException | ProposalException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+				} else {
+					log.error("response failed. status: " + response.getStatus().getStatus());
 
-				return null;
+				}
+			}
+			throw new RuntimeException();
+		} catch (InvalidArgumentException | ProposalException e) {
+			e.printStackTrace();
+			throw new RuntimeException();
+		}
+
 	}
-	
+
 	public long changeFeriadoSituacao(String key, String action) {
 
 		TransactionProposalRequest req = client.newTransactionProposalRequest();
 		ChaincodeID cid = ChaincodeID.newBuilder().setName("minerva-app").build();
 		req.setChaincodeID(cid);
 		req.setFcn("mudarSituacao");
-		//String[] fields = data.split("/");
-		//data = fields[2] + "/" + fields[1] + "/" + fields[0];
+		// String[] fields = data.split("/");
+		// data = fields[2] + "/" + fields[1] + "/" + fields[0];
 		req.setArgs(new String[] { key, action });
 		Collection<ProposalResponse> resps;
 		try {
@@ -458,15 +471,15 @@ public class ChaincodeService {
 			future.get();
 			// display response
 			for (ProposalResponse pres : resps) {
-				
+
 				String stringResponse = new String(pres.getChaincodeActionResponsePayload());
 				System.out.println("Alterado: " + stringResponse);
-				
+
 				if (pres.isVerified() && pres.getStatus() == ChaincodeResponse.Status.SUCCESS) {
 					ByteString payload = pres.getProposalResponse().getResponse().getPayload();
 					try (JsonReader jsonReader = Json.createReader(new ByteArrayInputStream(payload.toByteArray()))) {
 						JsonObject rec = jsonReader.readObject();
-						
+
 						System.out.println(rec.get("Key").toString());
 						return Long.parseLong(rec.getString("Key"));
 					}

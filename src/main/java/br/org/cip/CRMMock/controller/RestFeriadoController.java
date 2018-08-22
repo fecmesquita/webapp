@@ -22,6 +22,7 @@ public class RestFeriadoController {
 	public @ResponseBody Feriado findByDate(@PathVariable String key) {
 	    return chaincodeService.getFeriado(key);
 	}
+	//curl --header "Accept: application/json" http://localhost:8080/CRMMock/rest/feriado/consultar/20180125
 	
 	/*@Autowired
 	private FeriadoService feriadoService;
