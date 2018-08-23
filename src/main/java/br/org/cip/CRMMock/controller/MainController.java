@@ -27,8 +27,8 @@ import br.org.cip.CRMMock.service.FeriadoService;
 @Controller
 public class MainController {
 
-	@Autowired
-	private FeriadoService feriadoService;
+	//@Autowired
+	//private FeriadoService feriadoService;
 	
 	@Autowired
 	private ChaincodeService chaincodeService;

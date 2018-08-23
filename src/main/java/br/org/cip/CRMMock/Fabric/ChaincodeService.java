@@ -55,7 +55,6 @@ public class ChaincodeService {
 
 	private static final Logger log = LoggerFactory.getLogger(ChaincodeService.class);
 
-	// TODO resgister user admin...
 	private static HFCAClient caClient;// = getHfCaClient("http://localhost:7054", null);
 	private static UserVO admin;// = getAdmin(caClient);
 	private static UserVO appUser;
@@ -66,9 +65,9 @@ public class ChaincodeService {
 	public ChaincodeService() throws Exception {
 		caClient = getHfCaClient("http://localhost:7054", null);
 		admin = getAdmin(caClient);
-		// appUser = getUser(caClient, admin, "hfuser");
+		appUser = getUser(caClient, admin, "hfuser");
 		client = getHfClient();
-		client.setUserContext(admin);
+		client.setUserContext(appUser);
 		channel = getChannel(client);
 	}
 
