@@ -8,7 +8,7 @@
 	integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
 	crossorigin="anonymous">
 
-<link rel="stylesheet" type="text/css"
+<link rel="stylesheet" type="text/css" href="/Users/Felipe/Documents/Minerva/CRMMock/src/CRMMock/src/main/webapp/resources/css"
 	th:href="@{resources/css/estilos.css}">
 
 <title>Insert title here</title>
@@ -28,8 +28,8 @@
 
 			<div class="collapse navbar-collapse text-center" id="navbar">
 				<ul class="navbar-nav mr-auto">
-					<li class="nav-item"><a class="nav-link text-white"
-						href="/CRMMock/dbconsole">DBConsole</a></li>
+					<!-- <li class="nav-item"><a class="nav-link text-white"
+						href="/CRMMock/dbconsole">DBConsole</a></li> -->
 				</ul>
 				<!-- Rounded switch -->
 				<form th:action="@{/changeTheme}" th:object="${theme}" method="post">
@@ -54,7 +54,7 @@
 			<input type="text" th:value="${admin}" th:field="*{username}" />
 
 			<h3>Senha</h3>
-			<input type="text" th:value="${admin}" th:field="*{password}" /> <br>
+			<input type="password" th:value="${admin}" th:field="*{password}" /> <br>
 			<br>
 
 			<button type="submit" class="btn btn-primary">Entrar</button>

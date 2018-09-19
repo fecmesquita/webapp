@@ -19,7 +19,6 @@ import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
-import javax.management.RuntimeErrorException;
 
 import org.hyperledger.fabric.sdk.BlockEvent.TransactionEvent;
 import org.hyperledger.fabric.sdk.ChaincodeID;
@@ -46,14 +45,15 @@ import org.springframework.stereotype.Service;
 
 import com.google.protobuf.ByteString;
 
-import br.org.cip.CRMMock.controller.FeriadoController;
 import br.org.cip.CRMMock.model.Feriado;
 import br.org.cip.CRMMock.model.UserVO;
 
 @Service
-public class ChaincodeService {
+public class ChaincodeService{
 
 	private static final Logger log = LoggerFactory.getLogger(ChaincodeService.class);
+
+	private static final String USERAPPPATH = "/usr/local/minerva/";//"/usr/local/minerva/" ou ""
 
 	private static HFCAClient caClient;// = getHfCaClient("http://localhost:7054", null);
 	private static UserVO admin;// = getAdmin(caClient);
@@ -63,7 +63,7 @@ public class ChaincodeService {
 	private static Channel channel;// = getChannel(client);
 
 	public ChaincodeService() throws Exception {
-		caClient = getHfCaClient("http://localhost:7054", null);
+		caClient = getHfCaClient("http://ca.cipbancos.org.br:7054", null);//ca.cipbancos.org.br:7054//10.150.162.190
 		admin = getAdmin(caClient);
 		appUser = getUser(caClient, admin, "hfuser");
 		client = getHfClient();
@@ -84,11 +84,11 @@ public class ChaincodeService {
 		// initialize channel
 		// peer name and endpoint in fabcar network
 		try {
-			Peer peer = client.newPeer("peer0.org1.example.com", "grpc://localhost:7051");
+			Peer peer = client.newPeer("peer0.cipbancos.org.br", "grpc://peer0.cipbancos.org.br:7051");//peer0.cipbancos.org.br
 			// eventhub name and endpoint in fabcar network
-			EventHub eventHub = client.newEventHub("eventhub01", "grpc://localhost:7053");
+			EventHub eventHub = client.newEventHub("eventhub01", "grpc://peer0.cipbancos.org.br:7053");
 			// orderer name and endpoint in fabcar network
-			Orderer orderer = client.newOrderer("orderer.example.com", "grpc://localhost:7050");
+			Orderer orderer = client.newOrderer("orderer.cipbancos.org.br", "grpc://orderer.cipbancos.org.br:7050");//orderer.cipbancos.org.br//10.150.162.190
 			// channel name in network
 			Channel channel = client.newChannel("mychannel");
 			channel.addPeer(peer);
@@ -147,10 +147,10 @@ public class ChaincodeService {
 		try {
 			UserVO user = tryDeserialize(userId);
 			if (user == null) {
-				RegistrationRequest rr = new RegistrationRequest(userId, "org1");
+				RegistrationRequest rr = new RegistrationRequest(userId, "cip");
 				String enrollmentSecret = caClient.register(rr, registrar);
 				Enrollment enrollment = caClient.enroll(userId, enrollmentSecret);
-				user = new UserVO(userId, "org1", "Org1MSP", enrollment);
+				user = new UserVO(userId, "cip", "CIPMSP", enrollment);
 				serialize(user);
 			}
 			return user;
@@ -176,7 +176,7 @@ public class ChaincodeService {
 			admin = tryDeserialize("admin");
 			if (admin == null) {
 				Enrollment adminEnrollment = caClient.enroll("admin", "adminpw");
-				admin = new UserVO("admin", "org1", "Org1MSP", adminEnrollment);
+				admin = new UserVO("admin", "cip", "CIPMSP", adminEnrollment);
 				serialize(admin);
 			}
 			return admin;
@@ -219,7 +219,7 @@ public class ChaincodeService {
 	 */
 	static void serialize(UserVO user) throws IOException {
 		try (ObjectOutputStream oos = new ObjectOutputStream(
-				Files.newOutputStream(Paths.get(user.getName() + ".jso")))) {
+				Files.newOutputStream(Paths.get(USERAPPPATH + user.getName() + ".jso")))) {
 			oos.writeObject(user);
 		}
 	}
@@ -233,14 +233,14 @@ public class ChaincodeService {
 	 * @throws Exception
 	 */
 	static UserVO tryDeserialize(String name) throws Exception {
-		if (Files.exists(Paths.get(name + ".jso"))) {
+		if (Files.exists(Paths.get(USERAPPPATH + name + ".jso"))) {
 			return deserialize(name);
 		}
 		return null;
 	}
 
 	static UserVO deserialize(String name) throws Exception {
-		try (ObjectInputStream decoder = new ObjectInputStream(Files.newInputStream(Paths.get(name + ".jso")))) {
+		try (ObjectInputStream decoder = new ObjectInputStream(Files.newInputStream(Paths.get(USERAPPPATH + name + ".jso")))) {
 			return (UserVO) decoder.readObject();
 		}
 	}
@@ -267,7 +267,7 @@ public class ChaincodeService {
 					List<Feriado> feriados = new ArrayList<Feriado>();
 					for (int i = 0; i < arr.size(); i++) {
 						JsonObject rec = arr.getJsonObject(i);
-						System.out.println(rec);
+						//System.out.println(rec);
 						// generateFeriado(rec);
 						Feriado feriadoRecord = generateFeriadoFromJsonArray(rec);
 						feriados.add(feriadoRecord);
@@ -275,7 +275,7 @@ public class ChaincodeService {
 					return feriados;
 				}
 			} else {
-				// log.error("response failed. status: " + response.getStatus().getStatus());
+				log.error("response failed. status: " + response.getStatus().getStatus());
 			}
 		}
 		return null;
@@ -299,8 +299,8 @@ public class ChaincodeService {
 		feriado.setTipoFeriado(tipoFeriado);
 		feriado.setTipoRequisicao(tipoRequisicao);
 
-		System.out.println("Data: " + feriado.getData());
-		System.out.println("Descrição: " + feriado.getDescricao());
+		//System.out.println("Data: " + feriado.getData());
+		//System.out.println("Descrição: " + feriado.getDescricao());
 
 		return feriado;
 
@@ -326,8 +326,8 @@ public class ChaincodeService {
 		feriado.setTipoFeriado(tipoFeriado);
 		feriado.setTipoRequisicao(tipoRequisicao);
 
-		System.out.println("Data: " + feriado.getData());
-		System.out.println("Descrição: " + feriado.getDescricao());
+		//System.out.println("Data: " + feriado.getData());
+		//System.out.println("Descrição: " + feriado.getDescricao());
 
 		return feriado;
 
@@ -383,8 +383,8 @@ public class ChaincodeService {
 			// display response
 			for (ProposalResponse pres : resps) {
 
-				String stringResponse = new String(pres.getChaincodeActionResponsePayload());
-				System.out.println("Alterado: " + stringResponse);
+				//String stringResponse = new String(pres.getChaincodeActionResponsePayload());
+				//System.out.println("Alterado: " + stringResponse);
 
 				if (pres.isVerified() && pres.getStatus() == ChaincodeResponse.Status.SUCCESS) {
 					ByteString payload = pres.getProposalResponse().getResponse().getPayload();
@@ -395,7 +395,7 @@ public class ChaincodeService {
 						// for (int i = 0; i < arr.size(); i++) {
 						JsonObject rec = jsonReader.readObject();
 
-						System.out.println(rec.get("Key").toString());
+						//System.out.println(rec.get("Key").toString());
 						// }
 						return Long.parseLong(rec.getString("Key"));
 					}
@@ -425,7 +425,6 @@ public class ChaincodeService {
 			for (ProposalResponse response : responses) {
 				if (response.isVerified() && response.getStatus() == ChaincodeResponse.Status.SUCCESS) {
 					ByteString payload = response.getProposalResponse().getResponse().getPayload();
-					// System.out.println("OKKK " + payload.toStringUtf8());
 					try (JsonReader jsonReader = Json.createReader(new ByteArrayInputStream(payload.toByteArray()))) {
 						// parse response
 						JsonObject rec = jsonReader.readObject();
@@ -434,7 +433,7 @@ public class ChaincodeService {
 						// List<Feriado> feriados = new ArrayList<Feriado>();
 						// for (int i = 0; i < arr.size(); i++) {
 						// JsonObject rec = arr.getJsonObject(0);
-						System.out.println(rec);
+						//System.out.println(rec);
 						// generateFeriado(rec);
 						Feriado feriadoRecord = generateFeriado(rec);
 						// feriados.add(feriadoRecord);
@@ -471,15 +470,15 @@ public class ChaincodeService {
 			// display response
 			for (ProposalResponse pres : resps) {
 
-				String stringResponse = new String(pres.getChaincodeActionResponsePayload());
-				System.out.println("Alterado: " + stringResponse);
+				//String stringResponse = new String(pres.getChaincodeActionResponsePayload());
+				//System.out.println("Alterado: " + stringResponse);
 
 				if (pres.isVerified() && pres.getStatus() == ChaincodeResponse.Status.SUCCESS) {
 					ByteString payload = pres.getProposalResponse().getResponse().getPayload();
 					try (JsonReader jsonReader = Json.createReader(new ByteArrayInputStream(payload.toByteArray()))) {
 						JsonObject rec = jsonReader.readObject();
 
-						System.out.println(rec.get("Key").toString());
+						//System.out.println(rec.get("Key").toString());
 						return Long.parseLong(rec.getString("Key"));
 					}
 				}

@@ -10,7 +10,7 @@
 	</appender>
 
 	<appender name="FILE" class="ch.qos.logback.core.FileAppender">
-		<file>/Users/Felipe/Documents/Minerva/FILE_${byDate}.log</file>
+		<file>/Users/Felipe/Documents/Hyperledger/CUP/FILE_${byDate}.log</file>
 
 		<encoder>
 			<pattern>%date{HH:mm:ss.SSS} [%thread] %-5level %logger - %message %n
@@ -19,7 +19,7 @@
 	</appender>
 
 	<appender name="Webapp" class="ch.qos.logback.core.FileAppender">
-		<file>/Users/Felipe/Documents/Minerva/Log_${byDate}.log</file>
+		<file>/Users/Felipe/Documents/Hyperledger/CUP/Log_${byDate}.log</file>
 
 		<encoder>
 			<pattern>%date{HH:mm:ss.SSS} [%thread] %-5level %logger - %message %n
@@ -31,7 +31,7 @@
 	</logger>
 	
 	<appender name="thymeleaf" class="ch.qos.logback.core.FileAppender">
-		<file>/Users/Felipe/Documents/Minerva/Log_${byDate}.log</file>
+		<file>/Users/Felipe/Documents/Hyperledger/CUP/ThymeleafLog_${byDate}.log</file>
 
 		<encoder>
 			<pattern>%date{HH:mm:ss.SSS} [%thread] %-5level %logger - %message %n
