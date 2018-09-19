@@ -1,0 +1,48 @@
+version: '3'
+
+networks:
+  cup:
+
+services:
+  ca.cipbancos.org.br:
+    image: hyperledger/fabric-ca
+    environment:
+      - FABRIC_CA_HOME=/etc/hyperledger/fabric-ca-server
+      - FABRIC_CA_SERVER_CA_NAME=ca.cipbancos.org.br
+      - FABRIC_CA_SERVER_CA_CERTFILE=/etc/hyperledger/fabric-ca-server-config/ca.cipbancos.org.br-cert.pem
+      - FABRIC_CA_SERVER_CA_KEYFILE=/etc/hyperledger/fabric-ca-server-config/0b2cdb5133fbad7270f446d9715923bf9faa35875a676ad734d8010523df65c9_sk
+    ports:
+      - "7054:7054"
+    volumes:
+      - ./config/scripts-ca/:/scripts
+      - ./config/crypto-config/peerOrganizations/cipbancos.org.br/ca/:/etc/hyperledger/fabric-ca-server-config
+    command: sh -c 'chmod +x /scripts/start.sh && /scripts/start.sh'
+    container_name: ca.cipbancos.org.br
+    networks:
+      - cup
+  
+  orderer.cipbancos.org.br:
+    container_name: orderer.cipbancos.org.br
+    image: hyperledger/fabric-orderer
+    environment:
+      - ORDERER_GENERAL_LOGLEVEL=debug
+      - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
+      - ORDERER_GENERAL_GENESISMETHOD=file
+      - ORDERER_GENERAL_GENESISFILE=/etc/hyperledger/configtx/genesis.block
+      - ORDERER_GENERAL_LOCALMSPID=OrdererMSP
+      - ORDERER_GENERAL_LOCALMSPDIR=/etc/hyperledger/msp/orderer/msp
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/orderer
+    extra_hosts:
+      - "peer0.cipbancos.org.br:10.150.162.147"
+      - "peer1.cipbancos.org.br:10.150.182.77"
+    command: sh -c 'chmod +x /scripts/start.sh && /scripts/start.sh && orderer'
+    ports:
+      - 7050:7050
+    volumes:
+      - ./config/scripts-orderer/:/scripts
+      - ./config/config/:/etc/hyperledger/configtx
+      - ./config/crypto-config/ordererOrganizations/cipbancos.org.br/orderers/orderer.cipbancos.org.br/:/etc/hyperledger/msp/orderer
+      - ./config/crypto-config/peerOrganizations/cipbancos.org.br/peers/peer0.cipbancos.org.br/:/etc/hyperledger/msp/peerCIP
+      - ./config/crypto-config/peerOrganizations/cipbancos.org.br/peers/peer1.cipbancos.org.br/:/etc/hyperledger/msp/peerCIP
+    networks:
+      - cup
