@@ -53,22 +53,22 @@ public class ChaincodeService{
 
 	private static final Logger log = LoggerFactory.getLogger(ChaincodeService.class);
 
-	private static final String USERAPPPATH = "/usr/local/minerva/";//"/usr/local/minerva/" ou ""
+	private final String USERAPPPATH = "/usr/local/minerva/";//"/usr/local/minerva/" ou ""
 
-	private static HFCAClient caClient;// = getHfCaClient("http://localhost:7054", null);
-	private static UserVO admin;// = getAdmin(caClient);
-	private static UserVO appUser;
+	private HFCAClient caClient;// = getHfCaClient("http://localhost:7054", null);
+	private UserVO admin;// = getAdmin(caClient);
+	private UserVO appUser;
 	// private static UserVO appUser = getUser(caClient, admin, "hfuser");
-	private static HFClient client;// = getHfClient();
-	private static Channel channel;// = getChannel(client);
+	private HFClient client;// = getHfClient();
+	private Channel channel;// = getChannel(client);
 
 	public ChaincodeService() throws Exception {
-		caClient = getHfCaClient("http://ca.cipbancos.org.br:7054", null);//ca.cipbancos.org.br:7054//10.150.162.190
-		admin = getAdmin(caClient);
-		appUser = getUser(caClient, admin, "hfuser");
-		client = getHfClient();
-		client.setUserContext(appUser);
-		channel = getChannel(client);
+		this.caClient = getHfCaClient("http://ca.cipbancos.org.br:7054", null);//ca.cipbancos.org.br:7054//10.150.162.190
+		this.admin = getAdmin(caClient);
+		this.appUser = getUser(caClient, admin, "hfuser");
+		this.client = getHfClient();
+		this.client.setUserContext(appUser);
+		this.channel = getChannel(client);
 	}
 
 	/**
@@ -80,7 +80,7 @@ public class ChaincodeService{
 	 * @throws InvalidArgumentException
 	 * @throws TransactionException
 	 */
-	static Channel getChannel(HFClient client) {
+	private Channel getChannel(HFClient client) {
 		// initialize channel
 		// peer name and endpoint in fabcar network
 		try {
@@ -110,7 +110,7 @@ public class ChaincodeService{
 	 * @throws CryptoException
 	 * @throws InvalidArgumentException
 	 */
-	static HFClient getHfClient() {
+	private HFClient getHfClient() {
 		// initialize default cryptosuite
 		CryptoSuite cryptoSuite;
 		try {
@@ -143,7 +143,7 @@ public class ChaincodeService{
 	 * @return UserVO instance with userId, affiliation,mspId and enrollment set.
 	 * @throws Exception
 	 */
-	static UserVO getUser(HFCAClient caClient, UserVO registrar, String userId) {
+	private UserVO getUser(HFCAClient caClient, UserVO registrar, String userId) {
 		try {
 			UserVO user = tryDeserialize(userId);
 			if (user == null) {
@@ -170,7 +170,7 @@ public class ChaincodeService{
 	 * @return UserVO instance with userid, affiliation, mspId and enrollment set
 	 * @throws Exception
 	 */
-	static UserVO getAdmin(HFCAClient caClient) {
+	private UserVO getAdmin(HFCAClient caClient) {
 		UserVO admin;
 		try {
 			admin = tryDeserialize("admin");
@@ -196,7 +196,7 @@ public class ChaincodeService{
 	 * @return new client instance. never null.
 	 * @throws Exception
 	 */
-	static HFCAClient getHfCaClient(String caUrl, Properties caClientProperties) {
+	private HFCAClient getHfCaClient(String caUrl, Properties caClientProperties) {
 		try {
 			CryptoSuite cryptoSuite = CryptoSuite.Factory.getCryptoSuite();
 			HFCAClient caClient = HFCAClient.createNewInstance(caUrl, caClientProperties);
@@ -217,7 +217,7 @@ public class ChaincodeService{
 	 *            The object to be serialized
 	 * @throws IOException
 	 */
-	static void serialize(UserVO user) throws IOException {
+	private void serialize(UserVO user) throws IOException {
 		try (ObjectOutputStream oos = new ObjectOutputStream(
 				Files.newOutputStream(Paths.get(USERAPPPATH + user.getName() + ".jso")))) {
 			oos.writeObject(user);
@@ -232,14 +232,14 @@ public class ChaincodeService{
 	 * @return
 	 * @throws Exception
 	 */
-	static UserVO tryDeserialize(String name) throws Exception {
+	private UserVO tryDeserialize(String name) throws Exception {
 		if (Files.exists(Paths.get(USERAPPPATH + name + ".jso"))) {
 			return deserialize(name);
 		}
 		return null;
 	}
 
-	static UserVO deserialize(String name) throws Exception {
+	private UserVO deserialize(String name) throws Exception {
 		try (ObjectInputStream decoder = new ObjectInputStream(Files.newInputStream(Paths.get(USERAPPPATH + name + ".jso")))) {
 			return (UserVO) decoder.readObject();
 		}
@@ -467,7 +467,7 @@ public class ChaincodeService{
 			for (ProposalResponse pres : resps) {
 				if (!pres.isVerified() || pres.getStatus() == ChaincodeResponse.Status.FAILURE) {
 					ByteString payload = pres.getProposalResponse().getResponse().getPayload();
-					log.error("erro: {}", pres.getStatus().getStatus(), payload.toByteArray());
+					log.error("erro: {}, {}", pres.getStatus().getStatus(), payload.toByteArray());
 					throw new RuntimeException();
 				}
 			}
@@ -475,7 +475,8 @@ public class ChaincodeService{
 			future.get();
 		} catch (ProposalException | InvalidArgumentException | InterruptedException | ExecutionException e1) {
 			e1.printStackTrace();
-			log.error("Erro ao mudar a situacao do Feriado. " + e1.getStackTrace());
+			log.error("Erro ao mudar a situacao do Feriado. ");
+			log.error("Stacktrace: {}", e1);
 		}
 	}
 }
