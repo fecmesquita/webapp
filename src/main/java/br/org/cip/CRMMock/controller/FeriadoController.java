@@ -27,10 +27,7 @@ import br.org.cip.CRMMock.service.FeriadoService;
 public class FeriadoController {
 
 	private static final Logger log = LoggerFactory.getLogger(FeriadoController.class);
-			
-	@Autowired
-	private FeriadoService feriadoService;
-	
+
 	@Autowired
 	private ChaincodeService chaincodeService;
 	
@@ -38,11 +35,7 @@ public class FeriadoController {
 	public String incluirFeriado(@ModelAttribute("feriado") Feriado feriado, HttpSession session, Model model) throws IOException {
 		model.addAttribute("theme", Config.getInstance().getThemeType().getLabel());
 
-//		System.out.println("Feriado: " + feriado);
-//		System.out.println("Feriado is null?" + feriado==null);
-		
 		FeriadoForm feriadoForm = new FeriadoForm();
-//		feriadoForm.setSituacao(true);
 		model.addAttribute("feriadoform", feriadoForm );
 
 		UserVO user = (UserVO) session.getAttribute("usuarioLogado");
@@ -54,7 +47,7 @@ public class FeriadoController {
 		model.addAttribute("submitButton", "Criar");
 		
 		model.addAttribute("action", "salvar");
-
+		
 		return "feriadoForm";
 	}
 	
@@ -62,8 +55,6 @@ public class FeriadoController {
 	public String alterarFeriadoId(@PathVariable String feriadoId, HttpSession session, Model model) {
 		model.addAttribute("theme", Config.getInstance().getThemeType().getLabel());
 		
-//	    System.out.println(feriadoId);
-//	    System.out.println("test");
 	    FeriadoForm feriadoForm = new FeriadoForm();
 	    feriadoForm.setId(Long.parseLong(feriadoId));
 		model.addAttribute("feriadoform", feriadoForm );
@@ -79,8 +70,13 @@ public class FeriadoController {
 		model.addAttribute("action", "alterar");
 		
 		//model.addAttribute("feriado", feriadoService.getFeriado(Integer.parseInt(feriadoId)));
-		
-		model.addAttribute("feriado", chaincodeService.getFeriado(feriadoId));
+		try{			
+			model.addAttribute("feriado", chaincodeService.getFeriado(feriadoId));
+		}catch (Exception e) {
+			log.error("Nao foi possivel encontrar o feriado de id: {}", feriadoId);
+			log.error("StackTrace: ", e);
+			throw new RuntimeException("Nao foi possivel encontrar o feriado de id: " + feriadoId, e);
+		}
 
 		return "feriadoForm";
 	}
@@ -89,26 +85,25 @@ public class FeriadoController {
 	public String salvarFeriado(@ModelAttribute("feriadoForm") FeriadoForm feriadoForm, HttpSession session, Model model, RedirectAttributes attributes) {
 		model.addAttribute("theme", Config.getInstance().getThemeType().getLabel());
 		
-		System.out.println("Situacao: "+feriadoForm.getSituacao());
-		System.out.println("TipoFeriado: "+feriadoForm.getTipoFeriado());
-		System.out.println("TipoRequisicao: "+feriadoForm.getTipoRequisicao());
-		
-		//System.out.println( Theme.theme.equals(ThemeType.CRM));
-		
 		UserVO user = (UserVO) session.getAttribute("usuarioLogado");
 		if (user == null) {
 			user = new UserVO();
 		}
 		model.addAttribute("user", user);
 		
-		//long id = feriadoService.incluir("Efetivar", feriadoForm.getData(), feriadoForm.getSituacao(), feriadoForm.getTipoferiado(), feriadoForm.getDescricao());
-		
-		long id = chaincodeService.recordFeriado(feriadoForm.getData(), feriadoForm.getDescricao(), feriadoForm.getSituacao(), feriadoForm.getTipoFeriado(), "Efetivar");
-		
-		model.addAttribute("message", "Feriado criado!");
-		attributes.addFlashAttribute("message", "Feriado criado!");
-		
-		return "redirect:/feriado/consultar/" + id;
+		try{			
+			//long id = feriadoService.incluir("Efetivar", feriadoForm.getData(), feriadoForm.getSituacao(), feriadoForm.getTipoferiado(), feriadoForm.getDescricao());
+			
+			long id = chaincodeService.recordFeriado(feriadoForm.getData(), feriadoForm.getDescricao(), feriadoForm.getSituacao(), feriadoForm.getTipoFeriado(), "Efetivar");
+			model.addAttribute("message", "Feriado criado!");
+			attributes.addFlashAttribute("message", "Feriado criado!");	
+			log.debug("Feriado criado: {}, {}, {}, {}, {}.", feriadoForm.getData(), feriadoForm.getDescricao(), feriadoForm.getSituacao(), feriadoForm.getTipoFeriado(), "Efetivar");
+			return "redirect:/feriado/consultar/" + id;
+		}catch (Exception e) {
+			log.error("Nao foi possivel gravar o feriado: {}, {}, {}, {}, {}.", feriadoForm.getData(), feriadoForm.getDescricao(), feriadoForm.getSituacao(), feriadoForm.getTipoFeriado(), "Efetivar");
+			log.error("StackTrace: ", e);
+			throw new RuntimeException("Nao foi possivel encontrar o feriado.", e);
+		}
 	}
 	
 	@RequestMapping(value = "/feriado/alterar", method=RequestMethod.POST)
@@ -121,16 +116,20 @@ public class FeriadoController {
 		}
 		model.addAttribute("user", user);
 		
-		//long id = feriadoService.alterar(feriadoForm.getId(), "Efetivar", feriadoForm.getData(), feriadoForm.getSituacao(), feriadoForm.getTipoFeriado(), feriadoForm.getDescricao());
-
-		long id = chaincodeService.changeFeriado(feriadoForm.getData(), feriadoForm.getDescricao(), feriadoForm.getSituacao(), feriadoForm.getTipoFeriado(), "Efetivar");
-		
-		attributes.addFlashAttribute("message", "Feriado alterado com sucesso!");
-
-		return "redirect:/feriado/consultar/" + id;
+		try {
+			//long id = feriadoService.alterar(feriadoForm.getId(), "Efetivar", feriadoForm.getData(), feriadoForm.getSituacao(), feriadoForm.getTipoFeriado(), feriadoForm.getDescricao());
+			
+			long id = chaincodeService.changeFeriado(feriadoForm.getData(), feriadoForm.getDescricao(), feriadoForm.getSituacao(), feriadoForm.getTipoFeriado(), "Efetivar");
+			
+			attributes.addFlashAttribute("message", "Feriado alterado com sucesso!");
+			log.debug("Feriado alterado: {}, {}, {}, {}, {}.", feriadoForm.getData(), feriadoForm.getDescricao(), feriadoForm.getSituacao(), feriadoForm.getTipoFeriado(), "Efetivar");
+			return "redirect:/feriado/consultar/" + id;
+		}catch (Exception e) {
+			log.error("Nao foi possivel alterar o feriado: {}, {}, {}, {}, {}", feriadoForm.getData(), feriadoForm.getDescricao(), feriadoForm.getSituacao(), feriadoForm.getTipoFeriado(), "Efetivar");
+			log.error("StackTrace: ", e);
+			throw new RuntimeException("Nao foi possivel alterar o feriado", e);
+		}
 	}
-	
-	
 	
 	@RequestMapping(value = "/feriado/consultar/{feriadoId}", method=RequestMethod.GET)
 	public String feriadoDetails(@PathVariable String feriadoId, HttpSession session, Model model,@ModelAttribute("message") String message) {
@@ -143,13 +142,20 @@ public class FeriadoController {
 		
 		model.addAttribute("message", message);
 		
-		//Feriado feriado = feriadoService.getFeriado(Integer.parseInt(feriadoId));
-		
-		Feriado feriado = chaincodeService.getFeriado(feriadoId);
-		
-		model.addAttribute("feriado", feriado);
-
-		return "feriadoDetails";
+		try {
+			
+			//Feriado feriado = feriadoService.getFeriado(Integer.parseInt(feriadoId));
+			
+			Feriado feriado = chaincodeService.getFeriado(feriadoId);
+			
+			model.addAttribute("feriado", feriado);
+			
+			return "feriadoDetails";
+		}catch (Exception e) {
+			log.error("Nao foi possivel encontrar o feriado de id: {}", feriadoId);
+			log.error("StackTrace: ", e);
+			throw new RuntimeException("Nao foi possivel encontrar o feriado de id: " + feriadoId, e);
+		}
 	}
 	
 	@RequestMapping(value = "/feriado/ativar/{feriadoId}", method=RequestMethod.GET)
@@ -161,13 +167,18 @@ public class FeriadoController {
 		}
 		model.addAttribute("user", user);
 		
-		//feriadoService.ativar(Long.parseLong(feriadoId), "Efetivar");
-		
-		chaincodeService.changeFeriadoSituacao(feriadoId, "ativar");
-		
-		//attributes.addFlashAttribute("message", "Feriado excluido com sucesso.");
-		log.debug("Teste consulta");
-		return "redirect:/";
+		try {
+			//feriadoService.ativar(Long.parseLong(feriadoId), "Efetivar");
+			
+			chaincodeService.changeFeriadoSituacao(feriadoId, "ativar");
+			
+			log.debug("Feriado de id {} ativado.", feriadoId);
+			return "redirect:/";
+		}catch (Exception e) {
+			log.error("Nao foi possivel ativar o Feriado de id: {}", feriadoId);
+			log.error("StackTrace: ", e);
+			throw new RuntimeException("Nao foi possivel ativar o Feriado de id: " + feriadoId, e);
+		}
 	}
 	
 	@RequestMapping(value = "/feriado/inativar/{feriadoId}", method=RequestMethod.GET)
@@ -179,13 +190,18 @@ public class FeriadoController {
 		}
 		model.addAttribute("user", user);
 		
-		//feriadoService.inativar(Long.parseLong(feriadoId), "Efetivar");
-		
-		chaincodeService.changeFeriadoSituacao(feriadoId, "inativar");
-		
-		//attributes.addFlashAttribute("message", "Feriado excluido com sucesso.");
-
-		return "redirect:/";
+		try {
+			//feriadoService.inativar(Long.parseLong(feriadoId), "Efetivar");
+			
+			chaincodeService.changeFeriadoSituacao(feriadoId, "inativar");
+			
+			log.debug("Feriado de id {} inativado.", feriadoId);
+			return "redirect:/";
+		}catch (Exception e) {
+			log.error("Nao foi possivel inativar o Feriado de id: {}", feriadoId);
+			log.error("StackTrace: ", e);
+			throw new RuntimeException("Nao foi possivel inativar o Feriado de id: " + feriadoId,e);
+		}		
 	}
 	
 	/*@RequestMapping(value = "/feriado/excluir/{feriadoId}", method=RequestMethod.GET)
@@ -204,6 +220,4 @@ public class FeriadoController {
 
 		return "redirect:/";
 	}*/
-	
-
 }

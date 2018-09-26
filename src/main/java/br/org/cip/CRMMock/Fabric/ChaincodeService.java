@@ -84,9 +84,9 @@ public class ChaincodeService{
 		// initialize channel
 		// peer name and endpoint in fabcar network
 		try {
-			Peer peer = client.newPeer("peer0.cipbancos.org.br", "grpc://peer0.cipbancos.org.br:7051");//peer0.cipbancos.org.br
+			Peer peer = client.newPeer("peer1.cipbancos.org.br", "grpc://peer1.cipbancos.org.br:7051");//peer0.cipbancos.org.br
 			// eventhub name and endpoint in fabcar network
-			EventHub eventHub = client.newEventHub("eventhub01", "grpc://peer0.cipbancos.org.br:7053");
+			EventHub eventHub = client.newEventHub("eventhub01", "grpc://peer1.cipbancos.org.br:7053");//peer0.cipbancos.org.br
 			// orderer name and endpoint in fabcar network
 			Orderer orderer = client.newOrderer("orderer.cipbancos.org.br", "grpc://orderer.cipbancos.org.br:7050");//orderer.cipbancos.org.br//10.150.162.190
 			// channel name in network
@@ -272,6 +272,7 @@ public class ChaincodeService{
 						Feriado feriadoRecord = generateFeriadoFromJsonArray(rec);
 						feriados.add(feriadoRecord);
 					}
+					log.debug("Feriados consultados.");
 					return feriados;
 				}
 			} else {
@@ -330,7 +331,6 @@ public class ChaincodeService{
 		//System.out.println("Descrição: " + feriado.getDescricao());
 
 		return feriado;
-
 	}
 
 	public long recordFeriado(String data, String descricao, String situacao, String tipoFeriado,
@@ -356,6 +356,7 @@ public class ChaincodeService{
 				System.out.println("Criado: " + stringResponse);
 				JsonReader jsonReader = Json.createReader(new StringReader(stringResponse));
 				JsonObject rec = jsonReader.readObject();
+				log.debug("Feriado gravado: {}", rec);
 				return Long.parseLong(rec.getString("Key"));
 			}
 			throw new RuntimeException();
@@ -378,8 +379,6 @@ public class ChaincodeService{
 		Collection<ProposalResponse> resps;
 		try {
 			resps = channel.sendTransactionProposal(req);
-			Future<TransactionEvent> future = channel.sendTransaction(resps);
-			future.get();
 			// display response
 			for (ProposalResponse pres : resps) {
 
@@ -401,6 +400,8 @@ public class ChaincodeService{
 					}
 				}
 			}
+			Future<TransactionEvent> future = channel.sendTransaction(resps);
+			future.get();
 		} catch (ProposalException | InvalidArgumentException | InterruptedException | ExecutionException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
@@ -442,7 +443,6 @@ public class ChaincodeService{
 					}
 				} else {
 					log.error("response failed. status: " + response.getStatus().getStatus());
-
 				}
 			}
 			throw new RuntimeException();
@@ -453,8 +453,7 @@ public class ChaincodeService{
 
 	}
 
-	public long changeFeriadoSituacao(String key, String action) {
-
+	public void changeFeriadoSituacao(String key, String action) {
 		TransactionProposalRequest req = client.newTransactionProposalRequest();
 		ChaincodeID cid = ChaincodeID.newBuilder().setName("minerva-app").build();
 		req.setChaincodeID(cid);
@@ -465,29 +464,18 @@ public class ChaincodeService{
 		Collection<ProposalResponse> resps;
 		try {
 			resps = channel.sendTransactionProposal(req);
-			Future<TransactionEvent> future = channel.sendTransaction(resps);
-			future.get();
-			// display response
 			for (ProposalResponse pres : resps) {
-
-				//String stringResponse = new String(pres.getChaincodeActionResponsePayload());
-				//System.out.println("Alterado: " + stringResponse);
-
-				if (pres.isVerified() && pres.getStatus() == ChaincodeResponse.Status.SUCCESS) {
+				if (!pres.isVerified() || pres.getStatus() == ChaincodeResponse.Status.FAILURE) {
 					ByteString payload = pres.getProposalResponse().getResponse().getPayload();
-					try (JsonReader jsonReader = Json.createReader(new ByteArrayInputStream(payload.toByteArray()))) {
-						JsonObject rec = jsonReader.readObject();
-
-						//System.out.println(rec.get("Key").toString());
-						return Long.parseLong(rec.getString("Key"));
-					}
+					log.error("erro: {}", pres.getStatus().getStatus(), payload.toByteArray());
+					throw new RuntimeException();
 				}
 			}
+			Future<TransactionEvent> future = channel.sendTransaction(resps);
+			future.get();
 		} catch (ProposalException | InvalidArgumentException | InterruptedException | ExecutionException e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
+			log.error("Erro ao mudar a situacao do Feriado. " + e1.getStackTrace());
 		}
-		throw new RuntimeException();
 	}
-
 }
