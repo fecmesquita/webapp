@@ -4,7 +4,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.StringReader;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -53,22 +52,22 @@ public class ChaincodeService{
 
 	private static final Logger log = LoggerFactory.getLogger(ChaincodeService.class);
 
-	private final String USERAPPPATH = "/usr/local/minerva/";//"/usr/local/minerva/" ou ""
+	private static final String USERAPPPATH = "/usr/local/minerva/";//"/usr/local/minerva/" ou ""
 
-	private HFCAClient caClient;// = getHfCaClient("http://localhost:7054", null);
-	private UserVO admin;// = getAdmin(caClient);
-	private UserVO appUser;
+	static HFCAClient caClient;// = getHfCaClient("http://localhost:7054", null);
+	static UserVO admin;// = getAdmin(caClient);
+	static UserVO appUser;
 	// private static UserVO appUser = getUser(caClient, admin, "hfuser");
-	private HFClient client;// = getHfClient();
-	private Channel channel;// = getChannel(client);
+	static HFClient client;// = getHfClient();
+	static Channel channel;// = getChannel(client);
 
 	public ChaincodeService() throws Exception {
-		this.caClient = getHfCaClient("http://ca.cipbancos.org.br:7054", null);//ca.cipbancos.org.br:7054//10.150.162.190
-		this.admin = getAdmin(caClient);
-		this.appUser = getUser(caClient, admin, "hfuser");
-		this.client = getHfClient();
-		this.client.setUserContext(appUser);
-		this.channel = getChannel(client);
+		caClient = getHfCaClient("http://ca.cipbancos.org.br:7054", null);//ca.cipbancos.org.br:7054//10.150.162.190
+		admin = getAdmin(caClient);
+		appUser = getUser(caClient, admin, "hfuser");
+		client = getHfClient();
+		client.setUserContext(appUser);
+		channel = getChannel(client);
 	}
 
 	/**
@@ -80,7 +79,7 @@ public class ChaincodeService{
 	 * @throws InvalidArgumentException
 	 * @throws TransactionException
 	 */
-	private Channel getChannel(HFClient client) {
+	static Channel getChannel(HFClient client) {
 		// initialize channel
 		// peer name and endpoint in fabcar network
 		try {
@@ -110,7 +109,7 @@ public class ChaincodeService{
 	 * @throws CryptoException
 	 * @throws InvalidArgumentException
 	 */
-	private HFClient getHfClient() {
+	static HFClient getHfClient() {
 		// initialize default cryptosuite
 		CryptoSuite cryptoSuite;
 		try {
@@ -143,7 +142,7 @@ public class ChaincodeService{
 	 * @return UserVO instance with userId, affiliation,mspId and enrollment set.
 	 * @throws Exception
 	 */
-	private UserVO getUser(HFCAClient caClient, UserVO registrar, String userId) {
+	static UserVO getUser(HFCAClient caClient, UserVO registrar, String userId) {
 		try {
 			UserVO user = tryDeserialize(userId);
 			if (user == null) {
@@ -170,7 +169,7 @@ public class ChaincodeService{
 	 * @return UserVO instance with userid, affiliation, mspId and enrollment set
 	 * @throws Exception
 	 */
-	private UserVO getAdmin(HFCAClient caClient) {
+	static UserVO getAdmin(HFCAClient caClient) {
 		UserVO admin;
 		try {
 			admin = tryDeserialize("admin");
@@ -196,7 +195,7 @@ public class ChaincodeService{
 	 * @return new client instance. never null.
 	 * @throws Exception
 	 */
-	private HFCAClient getHfCaClient(String caUrl, Properties caClientProperties) {
+	static HFCAClient getHfCaClient(String caUrl, Properties caClientProperties) {
 		try {
 			CryptoSuite cryptoSuite = CryptoSuite.Factory.getCryptoSuite();
 			HFCAClient caClient = HFCAClient.createNewInstance(caUrl, caClientProperties);
@@ -217,7 +216,7 @@ public class ChaincodeService{
 	 *            The object to be serialized
 	 * @throws IOException
 	 */
-	private void serialize(UserVO user) throws IOException {
+	static void serialize(UserVO user) throws IOException {
 		try (ObjectOutputStream oos = new ObjectOutputStream(
 				Files.newOutputStream(Paths.get(USERAPPPATH + user.getName() + ".jso")))) {
 			oos.writeObject(user);
@@ -232,58 +231,57 @@ public class ChaincodeService{
 	 * @return
 	 * @throws Exception
 	 */
-	private UserVO tryDeserialize(String name) throws Exception {
+	static UserVO tryDeserialize(String name) throws Exception {
 		if (Files.exists(Paths.get(USERAPPPATH + name + ".jso"))) {
 			return deserialize(name);
 		}
 		return null;
 	}
 
-	private UserVO deserialize(String name) throws Exception {
+	static UserVO deserialize(String name) throws Exception {
 		try (ObjectInputStream decoder = new ObjectInputStream(Files.newInputStream(Paths.get(USERAPPPATH + name + ".jso")))) {
 			return (UserVO) decoder.readObject();
 		}
 	}
 
 	public List<Feriado> getAllFeriados() throws InvalidArgumentException, ProposalException {
-
-		// create chaincode request
 		QueryByChaincodeRequest qpr = client.newQueryProposalRequest();
-
 		ChaincodeID minervaCCId = ChaincodeID.newBuilder().setName("minerva-app").build();
 		qpr.setChaincodeID(minervaCCId);
 		qpr.setFcn("queryAllFeriado");
 
 		Collection<ProposalResponse> responses = channel.queryByChaincode(qpr);
-
-		for (ProposalResponse response : responses) {
-			if (response.isVerified() && response.getStatus() == ChaincodeResponse.Status.SUCCESS) {
-				ByteString payload = response.getProposalResponse().getResponse().getPayload();
-				// System.out.println("OKKK " + payload.toStringUtf8());
-				try (JsonReader jsonReader = Json.createReader(new ByteArrayInputStream(payload.toByteArray()))) {
-					// parse response
-					JsonArray arr = jsonReader.readArray();
-					// Map<String, Feriado> feriados = new HashMap<>();
-					List<Feriado> feriados = new ArrayList<Feriado>();
-					for (int i = 0; i < arr.size(); i++) {
-						JsonObject rec = arr.getJsonObject(i);
-						//System.out.println(rec);
-						// generateFeriado(rec);
-						Feriado feriadoRecord = generateFeriadoFromJsonArray(rec);
-						feriados.add(feriadoRecord);
-					}
-					log.debug("Feriados consultados.");
-					return feriados;
+		try {
+			List<Feriado> feriados = new ArrayList<Feriado>();
+			for (ProposalResponse pres : responses) {
+				if (!pres.isVerified() || pres.getStatus() == ChaincodeResponse.Status.FAILURE || pres.getStatus() == ChaincodeResponse.Status.UNDEFINED) {
+					ByteString payload = pres.getProposalResponse().getResponse().getPayload();
+					log.error("erro: {}, {}", pres.getStatus().getStatus(), payload.toByteArray());
+					throw new RuntimeException();
 				}
-			} else {
-				log.error("response failed. status: " + response.getStatus().getStatus());
+				if (pres.isVerified() && pres.getStatus() == ChaincodeResponse.Status.SUCCESS) {
+					ByteString payload = pres.getProposalResponse().getResponse().getPayload();
+					try (JsonReader jsonReader = Json.createReader(new ByteArrayInputStream(payload.toByteArray()))) {
+						JsonArray arr = jsonReader.readArray();
+						for (int i = 0; i < arr.size(); i++) {
+							JsonObject rec = arr.getJsonObject(i);
+							Feriado feriadoRecorded = generateFeriadoFromJsonArray(rec);
+							feriados.add(feriadoRecorded);
+						}
+						log.debug("Feriados consultados.");
+					}					
+				}
 			}
+			return feriados;
+		} catch (Exception e) {
+			e.printStackTrace();
+			log.error("Erro ao consultar todos os Feriados.");
+			log.error("Stacktrace: {}", e);
+			throw new RuntimeException();
 		}
-		return null;
 	}
 
 	private Feriado generateFeriadoFromJsonArray(JsonObject rec) {
-
 		long key = Long.parseLong(rec.get("Key").toString().substring(1, rec.get("Key").toString().length() - 1));
 		String tipoRequisicao = rec.get("Record").asJsonObject().getString("tipoRequisicao");
 		String data = rec.get("Record").asJsonObject().getString("data");
@@ -299,18 +297,10 @@ public class ChaincodeService{
 		feriado.setSituacao(situacao);
 		feriado.setTipoFeriado(tipoFeriado);
 		feriado.setTipoRequisicao(tipoRequisicao);
-
-		//System.out.println("Data: " + feriado.getData());
-		//System.out.println("Descrição: " + feriado.getDescricao());
-
 		return feriado;
-
 	}
 
 	private Feriado generateFeriado(JsonObject rec) {
-
-		// long key = Long.parseLong(rec.get("Key").toString().substring(1,
-		// rec.get("Key").toString().length() - 1));
 		String tipoRequisicao = rec.asJsonObject().getString("tipoRequisicao");
 		String data = rec.asJsonObject().getString("data");
 		String[] fields = data.split("/");
@@ -326,15 +316,10 @@ public class ChaincodeService{
 		feriado.setSituacao(situacao);
 		feriado.setTipoFeriado(tipoFeriado);
 		feriado.setTipoRequisicao(tipoRequisicao);
-
-		//System.out.println("Data: " + feriado.getData());
-		//System.out.println("Descrição: " + feriado.getDescricao());
-
 		return feriado;
 	}
 
-	public long recordFeriado(String data, String descricao, String situacao, String tipoFeriado,
-			String tipoRequisicao) {
+	public long recordFeriado(String data, String descricao, String situacao, String tipoFeriado, String tipoRequisicao) {
 
 		TransactionProposalRequest req = client.newTransactionProposalRequest();
 		ChaincodeID cid = ChaincodeID.newBuilder().setName("minerva-app").build();
@@ -346,29 +331,33 @@ public class ChaincodeService{
 		Collection<ProposalResponse> resps;
 		try {
 			resps = channel.sendTransactionProposal(req);
+			Long key = null;
+			for (ProposalResponse pres : resps) {
+				if (!pres.isVerified() || pres.getStatus() == ChaincodeResponse.Status.FAILURE || pres.getStatus() == ChaincodeResponse.Status.UNDEFINED) {
+					ByteString payload = pres.getProposalResponse().getResponse().getPayload();
+					log.error("erro: {}, {}", pres.getStatus().getStatus(), payload.toByteArray());
+					throw new RuntimeException();
+				}
+				if (pres.isVerified() && pres.getStatus() == ChaincodeResponse.Status.SUCCESS) {
+					ByteString payload = pres.getProposalResponse().getResponse().getPayload();
+					try (JsonReader jsonReader = Json.createReader(new ByteArrayInputStream(payload.toByteArray()))) {
+						JsonObject rec = jsonReader.readObject();
+						key = Long.parseLong(rec.getString("Key"));
+					}					
+				}
+			}
 			Future<TransactionEvent> future = channel.sendTransaction(resps);
 			future.get();
-
-			// display response
-			for (ProposalResponse pres : resps) {
-
-				String stringResponse = new String(pres.getChaincodeActionResponsePayload());
-				System.out.println("Criado: " + stringResponse);
-				JsonReader jsonReader = Json.createReader(new StringReader(stringResponse));
-				JsonObject rec = jsonReader.readObject();
-				log.debug("Feriado gravado: {}", rec);
-				return Long.parseLong(rec.getString("Key"));
-			}
-			throw new RuntimeException();
-		} catch (ProposalException | InvalidArgumentException | InterruptedException | ExecutionException e1) {
-			e1.printStackTrace();
+			return key;
+		} catch (ProposalException | InvalidArgumentException | InterruptedException | ExecutionException e) {
+			e.printStackTrace();
+			log.error("Erro ao mudar o Feriado.");
+			log.error("Stacktrace: {}", e);
 			throw new RuntimeException();
 		}
 	}
 
-	public long changeFeriado(String data, String descricao, String situacao, String tipoFeriado,
-			String tipoRequisicao) {
-
+	public long changeFeriado(String data, String descricao, String situacao, String tipoFeriado,	String tipoRequisicao) {
 		TransactionProposalRequest req = client.newTransactionProposalRequest();
 		ChaincodeID cid = ChaincodeID.newBuilder().setName("minerva-app").build();
 		req.setChaincodeID(cid);
@@ -379,41 +368,34 @@ public class ChaincodeService{
 		Collection<ProposalResponse> resps;
 		try {
 			resps = channel.sendTransactionProposal(req);
-			// display response
+			Long key = null;
 			for (ProposalResponse pres : resps) {
-
-				//String stringResponse = new String(pres.getChaincodeActionResponsePayload());
-				//System.out.println("Alterado: " + stringResponse);
-
+				if (!pres.isVerified() || pres.getStatus() == ChaincodeResponse.Status.FAILURE || pres.getStatus() == ChaincodeResponse.Status.UNDEFINED) {
+					ByteString payload = pres.getProposalResponse().getResponse().getPayload();
+					log.error("erro: {}, {}", pres.getStatus().getStatus(), payload.toByteArray());
+					throw new RuntimeException();
+				}
 				if (pres.isVerified() && pres.getStatus() == ChaincodeResponse.Status.SUCCESS) {
 					ByteString payload = pres.getProposalResponse().getResponse().getPayload();
-					// System.out.println("OKKK " + payload.toStringUtf8());
 					try (JsonReader jsonReader = Json.createReader(new ByteArrayInputStream(payload.toByteArray()))) {
-						// parse response
-						// JsonArray arr = jsonReader.readArray();
-						// for (int i = 0; i < arr.size(); i++) {
 						JsonObject rec = jsonReader.readObject();
-
-						//System.out.println(rec.get("Key").toString());
-						// }
-						return Long.parseLong(rec.getString("Key"));
-					}
+						key = Long.parseLong(rec.getString("Key"));
+					}					
 				}
 			}
 			Future<TransactionEvent> future = channel.sendTransaction(resps);
 			future.get();
-		} catch (ProposalException | InvalidArgumentException | InterruptedException | ExecutionException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-
+			return key;
+		} catch (ProposalException | InvalidArgumentException | InterruptedException | ExecutionException e) {
+			e.printStackTrace();
+			log.error("Erro ao mudar o Feriado.");
+			log.error("Stacktrace: {}", e);
+			throw new RuntimeException();
 		}
-		throw new RuntimeException();
 	}
 
 	public Feriado getFeriado(String feriadoId) {
-		// create chaincode request
 		QueryByChaincodeRequest qpr = client.newQueryProposalRequest();
-
 		ChaincodeID fabcarCCId = ChaincodeID.newBuilder().setName("minerva-app").build();
 		qpr.setChaincodeID(fabcarCCId);
 		qpr.setFcn("consultar");
@@ -422,35 +404,28 @@ public class ChaincodeService{
 		Collection<ProposalResponse> responses;
 		try {
 			responses = channel.queryByChaincode(qpr);
-
-			for (ProposalResponse response : responses) {
-				if (response.isVerified() && response.getStatus() == ChaincodeResponse.Status.SUCCESS) {
-					ByteString payload = response.getProposalResponse().getResponse().getPayload();
+			Feriado feriadoRecorded = null;
+			for (ProposalResponse pres : responses) {
+				if (!pres.isVerified() || pres.getStatus() == ChaincodeResponse.Status.FAILURE || pres.getStatus() == ChaincodeResponse.Status.UNDEFINED) {
+					ByteString payload = pres.getProposalResponse().getResponse().getPayload();
+					log.error("erro: {}, {}", pres.getStatus().getStatus(), payload.toByteArray());
+					throw new RuntimeException();
+				}
+				if (pres.isVerified() && pres.getStatus() == ChaincodeResponse.Status.SUCCESS) {
+					ByteString payload = pres.getProposalResponse().getResponse().getPayload();
 					try (JsonReader jsonReader = Json.createReader(new ByteArrayInputStream(payload.toByteArray()))) {
-						// parse response
 						JsonObject rec = jsonReader.readObject();
-						// JsonArray arr = jsonReader.readArray();
-						// Map<String, Feriado> feriados = new HashMap<>();
-						// List<Feriado> feriados = new ArrayList<Feriado>();
-						// for (int i = 0; i < arr.size(); i++) {
-						// JsonObject rec = arr.getJsonObject(0);
-						//System.out.println(rec);
-						// generateFeriado(rec);
-						Feriado feriadoRecord = generateFeriado(rec);
-						// feriados.add(feriadoRecord);
-						// }
-						return feriadoRecord;
-					}
-				} else {
-					log.error("response failed. status: " + response.getStatus().getStatus());
+						feriadoRecorded = generateFeriado(rec);
+					}					
 				}
 			}
-			throw new RuntimeException();
+			return feriadoRecorded;
 		} catch (InvalidArgumentException | ProposalException e) {
 			e.printStackTrace();
+			log.error("Erro ao consultar o Feriado.");
+			log.error("Stacktrace: {}", e);
 			throw new RuntimeException();
 		}
-
 	}
 
 	public void changeFeriadoSituacao(String key, String action) {
@@ -458,14 +433,12 @@ public class ChaincodeService{
 		ChaincodeID cid = ChaincodeID.newBuilder().setName("minerva-app").build();
 		req.setChaincodeID(cid);
 		req.setFcn("mudarSituacao");
-		// String[] fields = data.split("/");
-		// data = fields[2] + "/" + fields[1] + "/" + fields[0];
 		req.setArgs(new String[] { key, action });
 		Collection<ProposalResponse> resps;
 		try {
 			resps = channel.sendTransactionProposal(req);
 			for (ProposalResponse pres : resps) {
-				if (!pres.isVerified() || pres.getStatus() == ChaincodeResponse.Status.FAILURE) {
+				if (!pres.isVerified() || pres.getStatus() == ChaincodeResponse.Status.FAILURE || pres.getStatus() == ChaincodeResponse.Status.UNDEFINED) {
 					ByteString payload = pres.getProposalResponse().getResponse().getPayload();
 					log.error("erro: {}, {}", pres.getStatus().getStatus(), payload.toByteArray());
 					throw new RuntimeException();
@@ -473,10 +446,11 @@ public class ChaincodeService{
 			}
 			Future<TransactionEvent> future = channel.sendTransaction(resps);
 			future.get();
-		} catch (ProposalException | InvalidArgumentException | InterruptedException | ExecutionException e1) {
-			e1.printStackTrace();
-			log.error("Erro ao mudar a situacao do Feriado. ");
-			log.error("Stacktrace: {}", e1);
+		} catch (ProposalException | InvalidArgumentException | InterruptedException | ExecutionException e) {
+			e.printStackTrace();
+			log.error("Erro ao mudar a situacao do Feriado.");
+			log.error("Stacktrace: {}", e);
+			throw new RuntimeException(e);
 		}
 	}
 }

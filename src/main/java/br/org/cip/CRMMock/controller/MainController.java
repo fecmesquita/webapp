@@ -30,9 +30,8 @@ public class MainController {
 	private ChaincodeService chaincodeService;
 	
 	@RequestMapping(value = "/")
-	public ModelAndView index(HttpSession session, Model model){
-		System.out.println(Config.getInstance().getThemeType().getLabel());
-		
+	public String index(HttpSession session, Model model){
+		//System.out.println(Config.getInstance().getThemeType().getLabel());
 		model.addAttribute("theme", Config.getInstance().getThemeType().getLabel());
 		
 		UserVO user = (UserVO) session.getAttribute("usuarioLogado");
@@ -51,9 +50,9 @@ public class MainController {
 			//model.addAttribute("exception", e);
 			log.error("Nao foi possivel consultar os Feriados.");
 			log.error("StackTrace: ", e);
-			return new ModelAndView("error");
+			return "error";
 		}	
-		return new ModelAndView("home");
+		return "home";
 	}
 	
 	@RequestMapping(value = "/dbconsole")
