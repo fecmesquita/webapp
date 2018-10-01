@@ -52,7 +52,7 @@ public class ChaincodeService{
 
 	private static final Logger log = LoggerFactory.getLogger(ChaincodeService.class);
 
-	private static final String USERAPPPATH = "/usr/local/minerva/";//"/usr/local/minerva/" ou ""
+	private static final String USERAPPPATH = System.getenv("WEBAPP_USERAPPPATH");//"/usr/local/minerva/";//"/usr/local/minerva/" ou ""
 
 	static HFCAClient caClient;// = getHfCaClient("http://localhost:7054", null);
 	static UserVO admin;// = getAdmin(caClient);
@@ -83,9 +83,12 @@ public class ChaincodeService{
 		// initialize channel
 		// peer name and endpoint in fabcar network
 		try {
-			Peer peer = client.newPeer("peer1.cipbancos.org.br", "grpc://peer1.cipbancos.org.br:7051");//peer0.cipbancos.org.br
+			String peerEnv = System.getenv("WEBAPP_PEER");
+			String portEnv = System.getenv("WEBAPP_PEER_PORT");
+			String portEnvEventHub = System.getenv("WEBAPP_PORT_EVENTHUB");
+			Peer peer = client.newPeer(peerEnv, "grpc://" + peerEnv + ":" + portEnv);//("peer1.cipbancos.org.br", "grpc://peer1.cipbancos.org.br:7051");//peer0.cipbancos.org.br
 			// eventhub name and endpoint in fabcar network
-			EventHub eventHub = client.newEventHub("eventhub01", "grpc://peer1.cipbancos.org.br:7053");//peer0.cipbancos.org.br
+			EventHub eventHub = client.newEventHub("eventhub01", "grpc://"+ peerEnv + ":" + portEnvEventHub);//peer0.cipbancos.org.br
 			// orderer name and endpoint in fabcar network
 			Orderer orderer = client.newOrderer("orderer.cipbancos.org.br", "grpc://orderer.cipbancos.org.br:7050");//orderer.cipbancos.org.br//10.150.162.190
 			// channel name in network
