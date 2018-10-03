@@ -1,7 +1,6 @@
 package br.org.cip.CRMMock.controller.rest;
 
 
-import org.json.simple.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -16,11 +15,11 @@ public class RestErrorHandler {
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
     public Object processValidationError(RestFeriadoControllerException ex) {
-        String result = ex.getErrorMessage();
-        JSONObject json = new JSONObject();
-        json.put("null", result);
-        String message = json.toString();
-        return message;
+        //String result = ex.getErrorMessage();
+        //JSONObject json = new JSONObject();
+        //json.put("null", result);
+        //String message = json.toString();
+        return "{\"null\"}\n";
     }
 	
 }
