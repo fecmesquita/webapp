@@ -12,14 +12,14 @@ public class RestErrorHandler {
 
 	@SuppressWarnings("unchecked")
 	@ExceptionHandler(RestFeriadoControllerException.class)
-    @ResponseStatus(HttpStatus.OK)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
     @ResponseBody
     public Object processValidationError(RestFeriadoControllerException ex) {
         //String result = ex.getErrorMessage();
         //JSONObject json = new JSONObject();
         //json.put("null", result);
         //String message = json.toString();
-        return "{\"null\"}\n";
+        return "";
     }
 	
 }
